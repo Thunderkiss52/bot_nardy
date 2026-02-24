@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Движок Нард</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="hero">
+      <h1>Движок Нард</h1>
+      <p>Короткие и длинные нарды, ручной ввод кубиков, анализ ходов и сильный бот.</p>
+    </header>
+
+    <section class="panel controls">
+      <h2>Параметры партии</h2>
+      <div class="grid setupGrid">
+        <label>Тип игры
+          <select id="gameType">
+            <option value="short">Короткие</option>
+            <option value="long">Длинные</option>
+          </select>
+        </label>
+        <label>Сторона бота
+          <select id="botSide">
+            <option value="white">Белые</option>
+            <option value="black" selected>Чёрные</option>
+          </select>
+        </label>
+        <label>Соперник
+          <select id="opponent">
+            <option value="human" selected>Человек</option>
+            <option value="bot">Бот</option>
+          </select>
+        </label>
+        <label>Время на ход (1-20)
+          <input type="number" id="thinkTime" min="1" max="20" value="8" />
+        </label>
+        <label>Seed
+          <input type="number" id="seed" placeholder="опционально" />
+        </label>
+      </div>
+      <div class="row">
+        <button id="startBtn">Новая партия</button>
+        <label class="switchWrap"><input type="checkbox" id="showTop3" checked /> Показывать Top-3</label>
+      </div>
+    </section>
+
+    <section class="panel turn">
+      <h2>Ход</h2>
+      <div class="grid turnGrid">
+        <label>D1 <input type="number" id="d1" min="1" max="6" /></label>
+        <label>D2 <input type="number" id="d2" min="1" max="6" /></label>
+        <label>Линия (для человека)
+          <select id="lineIndex"></select>
+        </label>
+      </div>
+      <div class="row">
+        <button id="applyBtn">Применить</button>
+        <button id="legalBtn">Показать легальные</button>
+        <button id="undoBtn">Отменить</button>
+        <button id="exportBtn">Экспорт</button>
+      </div>
+      <div id="status" class="status"></div>
+    </section>
+
+    <section class="layout">
+      <article class="panel boardPanel">
+        <h2>Доска</h2>
+        <div class="boardStats">
+          <div id="barInfo" class="statBadge">Бар: Б 0 | Ч 0</div>
+          <div id="offInfo" class="statBadge">Вынос: Б 0 | Ч 0</div>
+        </div>
+        <div id="board" class="nardyBoard"></div>
+      </article>
+
+      <article class="panel infoPanel">
+        <h2>Информация</h2>
+        <pre id="snapshot" class="snapshot"></pre>
+        <h3>Top-3</h3>
+        <ul id="top3" class="list"></ul>
+        <h3>Анализ</h3>
+        <div id="analysis" class="analysis">Пока нет анализа.</div>
+      </article>
+
+      <article class="panel logPanel">
+        <h2>Лог ходов</h2>
+        <ul id="moveLog" class="list log"></ul>
+      </article>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
