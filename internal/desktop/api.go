@@ -98,11 +98,12 @@ func (a *API) ApplyDice(d1, d2 int, lineIndex int) (TurnResponse, error) {
 		return TurnResponse{}, errors.New("line index required for human turn")
 	}
 
+	before := a.svc.State()
 	state, chosen, err := a.svc.ApplyHumanLineByIndex(d1, d2, lineIndex)
 	if err != nil {
 		return TurnResponse{}, err
 	}
-	analysis, err := a.svc.AnalyzeLine(d1, d2, chosen)
+	analysis, err := a.svc.AnalyzeLineForState(before, d1, d2, chosen)
 	if err != nil {
 		return TurnResponse{}, err
 	}

@@ -233,41 +233,17 @@ func (s *Service) PassTurnIfNoLegal(d1, d2 int) (engine.GameState, error) {
 
 func (s *Service) AnalyzeLine(d1, d2 int, line engine.TurnLine) (AnalysisResult, error) {
 	s.mu.Lock()
-	defer s.mu.Unlock()
+	position := s.state
+	opts := s.options
+	s.mu.Unlock()
+	return analyzeLineForPosition(position, opts, d1, d2, line)
+}
 
-	currentBot := bot.New(bot.Config{
-		ThinkTime: time.Duration(s.options.ThinkTimeSec) * time.Second,
-		TopK:      10,
-		Seed:      s.options.Seed + 777,
-	})
-	decision, err := currentBot.ChooseMove(s.state, d1, d2)
-	if err != nil {
-		return AnalysisResult{}, err
-	}
-	if decision.LegalCount == 0 {
-		return AnalysisResult{Category: "exact", Delta: 0, BestLine: engine.TurnLine{}, BestWinProb: 0.5}, nil
-	}
-	if !engine.IsLegalLine(s.state, d1, d2, line) {
-		return AnalysisResult{}, errors.New("illegal line for analysis")
-	}
-
-	bestNext, _ := engine.ApplyTurnLine(s.state, decision.ChosenLine)
-	bestScore := bot.EvaluatePosition(bestNext, s.state.Turn)
-	lineNext, _ := engine.ApplyTurnLine(s.state, line)
-	lineScore := bot.EvaluatePosition(lineNext, s.state.Turn)
-	delta := normalizeDelta(bestScore - lineScore)
-
-	category := classifyDelta(delta)
-	if line.Key() == decision.ChosenLine.Key() {
-		category = "exact"
-		delta = 0
-	}
-	return AnalysisResult{
-		Category:    category,
-		Delta:       delta,
-		BestLine:    decision.ChosenLine,
-		BestWinProb: decision.ChosenProb,
-	}, nil
+func (s *Service) AnalyzeLineForState(position engine.GameState, d1, d2 int, line engine.TurnLine) (AnalysisResult, error) {
+	s.mu.Lock()
+	opts := s.options
+	s.mu.Unlock()
+	return analyzeLineForPosition(position, opts, d1, d2, line)
 }
 
 func (s *Service) Undo() (engine.GameState, error) {
@@ -371,4 +347,40 @@ func (s *Service) String() string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return fmt.Sprintf("game=%s turn=%s move=%d", s.state.GameType, s.state.Turn, s.state.Meta.MoveNumber)
+}
+
+func analyzeLineForPosition(position engine.GameState, opts GameOptions, d1, d2 int, line engine.TurnLine) (AnalysisResult, error) {
+	currentBot := bot.New(bot.Config{
+		ThinkTime: time.Duration(opts.ThinkTimeSec) * time.Second,
+		TopK:      10,
+		Seed:      opts.Seed + 777,
+	})
+	decision, err := currentBot.ChooseMove(position, d1, d2)
+	if err != nil {
+		return AnalysisResult{}, err
+	}
+	if decision.LegalCount == 0 {
+		return AnalysisResult{Category: "exact", Delta: 0, BestLine: engine.TurnLine{}, BestWinProb: 0.5}, nil
+	}
+	if !engine.IsLegalLine(position, d1, d2, line) {
+		return AnalysisResult{}, errors.New("illegal line for analysis")
+	}
+
+	bestNext, _ := engine.ApplyTurnLine(position, decision.ChosenLine)
+	bestScore := bot.EvaluatePosition(bestNext, position.Turn)
+	lineNext, _ := engine.ApplyTurnLine(position, line)
+	lineScore := bot.EvaluatePosition(lineNext, position.Turn)
+	delta := normalizeDelta(bestScore - lineScore)
+
+	category := classifyDelta(delta)
+	if line.Key() == decision.ChosenLine.Key() {
+		category = "exact"
+		delta = 0
+	}
+	return AnalysisResult{
+		Category:    category,
+		Delta:       delta,
+		BestLine:    decision.ChosenLine,
+		BestWinProb: decision.ChosenProb,
+	}, nil
 }
