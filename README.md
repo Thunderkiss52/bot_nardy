@@ -72,3 +72,9 @@ Then on macOS:
 unzip desktop-nardy-engine-macos.zip
 open desktop-nardy-engine.app
 ```
+
+If `spctl` shows `source=no signature`, build was not Developer ID signed/notarized.
+For production-ready build in CI set:
+
+- `MACOS_SIGN_IDENTITY` (example: `Developer ID Application: Your Name (TEAMID)`)
+- `MACOS_NOTARY_PROFILE` (keychain profile name for `xcrun notarytool`)
