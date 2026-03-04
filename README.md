@@ -50,6 +50,14 @@ Desktop mode uses local static frontend assets with Wails bindings (`window.go.d
 Cross-compiling Wails desktop to macOS from Linux is not supported by Wails. Use a macOS host or `.github/workflows/build-macos-desktop.yml`.
 
 For GitLab CI use `.gitlab-ci.yml` with a macOS runner tagged `macos`. Build artifact is uploaded as `build/bin/desktop-nardy-engine-macos.zip`.
+For GitHub Actions (macOS signing/notarization), configure repository secrets:
+
+- `MACOS_CERT_P12_BASE64` (base64 of Developer ID Application `.p12`)
+- `MACOS_CERT_PASSWORD` (password for `.p12`)
+- `MACOS_SIGN_IDENTITY` (example: `Developer ID Application: Your Name (TEAMID)`)
+- `APPLE_ID`
+- `APPLE_APP_SPECIFIC_PASSWORD`
+- `APPLE_TEAM_ID`
 
 ### GitLab Artifact Download (macOS)
 
