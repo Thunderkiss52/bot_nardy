@@ -3,11 +3,12 @@ name: Build macOS Desktop
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
 
 jobs:
   build-macos:
     runs-on: macos-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -18,14 +19,9 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Build Wails app (darwin/universal)
+      - name: Build app bundle and zip
         run: |
-          GOCACHE=$RUNNER_TEMP/go-cache go run github.com/wailsapp/wails/v2/cmd/wails@v2.11.0 build -tags wails -platform darwin/universal -clean
-
-      - name: Pack artifact
-        run: |
-          cd build/bin
-          ditto -c -k --sequesterRsrc --keepParent desktop-nardy-engine.app desktop-nardy-engine-macos.zip
+          GOCACHE=$RUNNER_TEMP/go-cache ./scripts/build-macos.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

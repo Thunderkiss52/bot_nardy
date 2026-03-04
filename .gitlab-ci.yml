@@ -1,0 +1,22 @@
+stages:
+  - build
+
+macos:build:
+  stage: build
+  tags:
+    - macos
+  variables:
+    GOCACHE: "$CI_PROJECT_DIR/.cache/go-build"
+  before_script:
+    - chmod +x scripts/build-macos.sh
+  script:
+    - ./scripts/build-macos.sh
+  artifacts:
+    name: "desktop-nardy-engine-macos-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - build/bin/desktop-nardy-engine-macos.zip
+    expire_in: 14 days
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'

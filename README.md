@@ -25,6 +25,9 @@ go run -tags wails ./cmd/desktop
 
 # macOS build (run on macOS host)
 GOCACHE=/tmp/go-cache go run github.com/wailsapp/wails/v2/cmd/wails@v2.11.0 build -tags wails -platform darwin/universal -clean
+
+# local macOS helper script
+./scripts/build-macos.sh
 ```
 
 ## Project structure
@@ -45,3 +48,27 @@ GOCACHE=/tmp/go-cache go run github.com/wailsapp/wails/v2/cmd/wails@v2.11.0 buil
 Desktop mode uses local static frontend assets with Wails bindings (`window.go.desktop.API`).
 `cmd/quality` is intended for threshold tracking from the technical spec.
 Cross-compiling Wails desktop to macOS from Linux is not supported by Wails. Use a macOS host or `.github/workflows/build-macos-desktop.yml`.
+
+For GitLab CI use `.gitlab-ci.yml` with a macOS runner tagged `macos`. Build artifact is uploaded as `build/bin/desktop-nardy-engine-macos.zip`.
+
+### GitLab Artifact Download (macOS)
+
+1. Push branch to GitLab and wait for job `macos:build` to finish.
+2. Open `CI/CD -> Pipelines -> <pipeline> -> macos:build`.
+3. Download artifact `desktop-nardy-engine-macos-<sha>.zip`.
+
+You can also download artifact by API:
+
+```bash
+curl --location \
+  --header "PRIVATE-TOKEN: <YOUR_GITLAB_TOKEN>" \
+  "https://<YOUR_GITLAB_HOST>/api/v4/projects/<PROJECT_ID>/jobs/artifacts/<BRANCH>/download?job=macos:build" \
+  --output desktop-nardy-engine-macos.zip
+```
+
+Then on macOS:
+
+```bash
+unzip desktop-nardy-engine-macos.zip
+open desktop-nardy-engine.app
+```
