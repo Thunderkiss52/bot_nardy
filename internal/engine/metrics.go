@@ -163,3 +163,181 @@ func HomeMass(state GameState, player Color) int {
 	}
 	return total
 }
+
+func RaceLead(state GameState, player Color) int {
+	return PipCount(state, player.Opponent()) - PipCount(state, player)
+}
+
+func EntryBlockPoints(state GameState, player Color) int {
+	count := 0
+	hFrom, hTo := HomeRange(player)
+	for p := hFrom; p <= hTo; p++ {
+		pt := state.Points[p]
+		if pt.Owner == player && pt.Count >= 2 {
+			count++
+		}
+	}
+	return count
+}
+
+func CountAnchorsShort(state GameState, player Color) int {
+	oppFrom, oppTo := HomeRange(player.Opponent())
+	count := 0
+	for p := oppFrom; p <= oppTo; p++ {
+		pt := state.Points[p]
+		if pt.Owner == player && pt.Count >= 2 {
+			count++
+		}
+	}
+	return count
+}
+
+func CountEscapedCheckersShort(state GameState, player Color) int {
+	oppExtreme := 0
+	if player == White {
+		oppExtreme = 25
+		for p := 1; p <= 24; p++ {
+			pt := state.Points[p]
+			if pt.Owner == Black && pt.Count > 0 && p < oppExtreme {
+				oppExtreme = p
+			}
+		}
+		if oppExtreme == 25 {
+			return 15
+		}
+		count := 0
+		for p := 1; p < oppExtreme; p++ {
+			pt := state.Points[p]
+			if pt.Owner == White {
+				count += pt.Count
+			}
+		}
+		return count
+	}
+
+	for p := 24; p >= 1; p-- {
+		pt := state.Points[p]
+		if pt.Owner == White && pt.Count > 0 {
+			oppExtreme = p
+			break
+		}
+	}
+	if oppExtreme == 0 {
+		return 15
+	}
+	count := 0
+	for p := oppExtreme + 1; p <= 24; p++ {
+		pt := state.Points[p]
+		if pt.Owner == Black {
+			count += pt.Count
+		}
+	}
+	return count
+}
+
+func BackmostPoint(state GameState, player Color) int {
+	if player == White {
+		for p := 24; p >= 1; p-- {
+			pt := state.Points[p]
+			if pt.Owner == White && pt.Count > 0 {
+				return p
+			}
+		}
+		return 0
+	}
+	for p := 1; p <= 24; p++ {
+		pt := state.Points[p]
+		if pt.Owner == Black && pt.Count > 0 {
+			return p
+		}
+	}
+	return 25
+}
+
+func CheckersOnHead(state GameState, player Color) int {
+	head := HeadPoint(player)
+	pt := state.Points[head]
+	if pt.Owner != player {
+		return 0
+	}
+	return pt.Count
+}
+
+func CountPointsInOuterBoard(state GameState, player Color) int {
+	count := 0
+	if player == White {
+		for p := 7; p <= 18; p++ {
+			pt := state.Points[p]
+			if pt.Owner == White && pt.Count >= 2 {
+				count++
+			}
+		}
+		return count
+	}
+	for p := 7; p <= 18; p++ {
+		pt := state.Points[p]
+		if pt.Owner == Black && pt.Count >= 2 {
+			count++
+		}
+	}
+	return count
+}
+
+func CountExposedBlotsShort(state GameState, player Color) int {
+	count := 0
+	for p := 1; p <= 24; p++ {
+		pt := state.Points[p]
+		if pt.Owner != player || pt.Count != 1 {
+			continue
+		}
+		if directShotCountOnPointShort(state, player.Opponent(), p) > 0 {
+			count++
+		}
+	}
+	return count
+}
+
+func CountDirectShotsShort(state GameState, attacker Color) int {
+	total := 0
+	defender := attacker.Opponent()
+	for p := 1; p <= 24; p++ {
+		pt := state.Points[p]
+		if pt.Owner != defender || pt.Count != 1 {
+			continue
+		}
+		total += directShotCountOnPointShort(state, attacker, p)
+	}
+	return total
+}
+
+func directShotCountOnPointShort(state GameState, attacker Color, target int) int {
+	if state.GameType != GameShort {
+		return 0
+	}
+
+	shots := 0
+	if state.Bar[attacker.Idx()] > 0 {
+		die := 0
+		if attacker == White {
+			die = 25 - target
+		} else {
+			die = target
+		}
+		if die >= 1 && die <= 6 {
+			shots++
+		}
+		return shots
+	}
+
+	for die := 1; die <= 6; die++ {
+		from := target - attacker.Direction()*die
+		if from < 1 || from > 24 {
+			continue
+		}
+		pt := state.Points[from]
+		if pt.Owner == attacker && pt.Count > 0 {
+			shots++
+		}
+	}
+	return shots
+}

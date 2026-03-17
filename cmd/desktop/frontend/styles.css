@@ -83,7 +83,8 @@ body {
 }
 
 .turnGrid {
-  grid-template-columns: 90px 90px minmax(250px, 1fr);
+  grid-template-columns: minmax(320px, 520px);
+  justify-content: center;
 }
 
 label {
@@ -141,6 +142,93 @@ button.alt {
   align-items: center;
   flex-wrap: wrap;
   margin-top: 10px;
+  justify-content: center;
+}
+
+.diceCenterStage {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+}
+
+.diceHeader {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.diceManual {
+  min-width: 200px;
+}
+
+.diceManual input {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.diceTray {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 92px));
+  gap: 12px;
+  justify-content: center;
+  width: min(100%, 460px);
+}
+
+.dieFace {
+  min-height: 92px;
+  border-radius: 22px;
+  border: 2px solid rgba(86, 51, 22, 0.35);
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.65) 18%, transparent 36%),
+    linear-gradient(180deg, #fff4e1 0%, #f0d7ab 100%);
+  color: #412512;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 10px 18px rgba(66, 34, 10, 0.15), inset 0 -6px 8px rgba(122, 78, 31, 0.14);
+}
+
+.dieFace .dieValue {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  font-family: "Bookman Old Style", "Baskerville", serif;
+}
+
+.dieFace .dieMeta {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #734925;
+}
+
+.dieFace.used {
+  opacity: 0.52;
+  filter: grayscale(0.12);
+}
+
+.dieFace.editable {
+  cursor: pointer;
+}
+
+.dieFace.extra {
+  cursor: default;
+}
+
+.dieFace.hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.linePicker {
+  width: min(100%, 520px);
 }
 
 .switchWrap {
@@ -489,7 +577,21 @@ button.alt {
   }
 
   .turnGrid {
-    grid-template-columns: repeat(2, minmax(120px, 1fr));
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .diceTray {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(100%, 260px);
+  }
+
+  .dieFace {
+    min-height: 76px;
+    border-radius: 18px;
+  }
+
+  .dieFace .dieValue {
+    font-size: 30px;
   }
 
   .nardyBoard {

@@ -64,14 +64,18 @@ func runQuality(gt engine.GameType, n int, strongThink, baselineThink time.Durat
 	rng := rand.New(rand.NewSource(seed))
 	wins := 0
 	quality := make([]moveQuality, 0, n*120)
+	evaluator, err := bot.ResolveEvaluatorFromEnv()
+	if err != nil {
+		panic(err)
+	}
 
 	for i := 0; i < n; i++ {
 		strongColor := engine.White
 		if i%2 == 1 {
 			strongColor = engine.Black
 		}
-		strong := bot.New(bot.Config{ThinkTime: strongThink, TopK: 10, Seed: seed + int64(i)*17 + 1})
-		baseline := bot.New(bot.Config{ThinkTime: baselineThink, TopK: 4, Seed: seed + int64(i)*17 + 2})
+		strong := bot.New(bot.Config{ThinkTime: strongThink, TopK: 12, MaxPlies: 640, Seed: seed + int64(i)*17 + 1, Evaluator: evaluator})
+		baseline := bot.New(bot.Config{ThinkTime: baselineThink, TopK: 4, MaxPlies: 320, Seed: seed + int64(i)*17 + 2, Evaluator: evaluator})
 
 		state := initialState(gt, seed+int64(i)*37)
 		winner, evals := playAndMeasure(state, strongColor, strong, baseline, rng)

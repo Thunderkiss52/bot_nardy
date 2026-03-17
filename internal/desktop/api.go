@@ -8,6 +8,7 @@ import (
 	"bot_nardy/internal/app"
 	"bot_nardy/internal/bot"
 	"bot_nardy/internal/engine"
+	"bot_nardy/internal/training"
 )
 
 type API struct {
@@ -30,6 +31,14 @@ type TurnResponse struct {
 	Decision  *bot.Decision       `json:"decision,omitempty"`
 	Analysis  *app.AnalysisResult `json:"analysis,omitempty"`
 	Applied   *engine.TurnLine    `json:"applied,omitempty"`
+}
+
+type SelfLearnResponse struct {
+	Result training.TrainSummary `json:"result"`
+}
+
+type BackgroundTrainingResponse struct {
+	Status app.BackgroundTrainingStatus `json:"status"`
 }
 
 func NewAPI(logPath string) (*API, error) {
@@ -68,6 +77,13 @@ func (a *API) State() TurnResponse {
 
 func (a *API) LegalLines(d1, d2 int) ([]engine.TurnLine, error) {
 	return a.svc.LegalLines(d1, d2)
+}
+
+func (a *API) SuggestMove(d1, d2 int) (bot.Decision, error) {
+	if d1 < 1 || d1 > 6 || d2 < 1 || d2 > 6 {
+		return bot.Decision{}, fmt.Errorf("dice must be in 1..6")
+	}
+	return a.svc.SuggestMove(d1, d2)
 }
 
 func (a *API) ApplyDice(d1, d2 int, lineIndex int) (TurnResponse, error) {
@@ -115,6 +131,46 @@ func (a *API) ApplyDice(d1, d2 int, lineIndex int) (TurnResponse, error) {
 	}, nil
 }
 
+func (a *API) ApplyBestMove(d1, d2 int) (TurnResponse, error) {
+	if d1 < 1 || d1 > 6 || d2 < 1 || d2 > 6 {
+		return TurnResponse{}, fmt.Errorf("dice must be in 1..6")
+	}
+
+	if a.svc.IsBotTurn() {
+		decision, state, err := a.svc.BotMove(d1, d2)
+		if err != nil {
+			return TurnResponse{}, err
+		}
+		return TurnResponse{State: state, IsBotTurn: a.svc.IsBotTurn(), Decision: &decision}, nil
+	}
+
+	decision, state, err := a.svc.ApplyBestLine(d1, d2)
+	if err != nil {
+		return TurnResponse{}, err
+	}
+	analysis := &app.AnalysisResult{
+		Category:    "exact",
+		Delta:       0,
+		BestLine:    decision.ChosenLine,
+		BestWinProb: decision.ChosenProb,
+	}
+	if decision.LegalCount == 0 {
+		analysis.BestWinProb = 0.5
+	}
+	applied := decision.ChosenLine
+	if decision.LegalCount == 0 {
+		applied = engine.TurnLine{}
+	}
+
+	return TurnResponse{
+		State:     state,
+		IsBotTurn: a.svc.IsBotTurn(),
+		Decision:  &decision,
+		Analysis:  analysis,
+		Applied:   &applied,
+	}, nil
+}
+
 func (a *API) Undo() (TurnResponse, error) {
 	state, err := a.svc.Undo()
 	if err != nil {
@@ -129,6 +185,30 @@ func (a *API) Export(path string) error {
 		return errors.New("export path is empty")
 	}
 	return a.svc.ExportState(path)
+}
+
+func (a *API) SelfLearn(epochs int) (SelfLearnResponse, error) {
+	result, err := a.svc.SelfLearn(epochs)
+	if err != nil {
+		return SelfLearnResponse{}, err
+	}
+	return SelfLearnResponse{Result: result}, nil
+}
+
+func (a *API) StartBackgroundTraining() (BackgroundTrainingResponse, error) {
+	status, err := a.svc.StartBackgroundTraining()
+	if err != nil {
+		return BackgroundTrainingResponse{}, err
+	}
+	return BackgroundTrainingResponse{Status: status}, nil
+}
+
+func (a *API) StopBackgroundTraining() (BackgroundTrainingResponse, error) {
+	return BackgroundTrainingResponse{Status: a.svc.StopBackgroundTraining()}, nil
+}
+
+func (a *API) BackgroundTrainingStatus() BackgroundTrainingResponse {
+	return BackgroundTrainingResponse{Status: a.svc.BackgroundTrainingStatus()}
 }
 
 func parseGameType(v string) engine.GameType {

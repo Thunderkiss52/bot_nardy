@@ -8,17 +8,31 @@
     seed: document.getElementById("seed"),
     d1: document.getElementById("d1"),
     d2: document.getElementById("d2"),
+    diceInput: document.getElementById("diceInput"),
+    syncDiceBtn: document.getElementById("syncDiceBtn"),
+    diceTray: document.getElementById("diceTray"),
+    dieBtn1: document.getElementById("dieBtn1"),
+    dieBtn2: document.getElementById("dieBtn2"),
+    dieBtn3: document.getElementById("dieBtn3"),
+    dieBtn4: document.getElementById("dieBtn4"),
     lineIndex: document.getElementById("lineIndex"),
     langSelect: document.getElementById("langSelect"),
     startBtn: document.getElementById("startBtn"),
+    selfLearnBtn: document.getElementById("selfLearnBtn"),
+    bgTrainBtn: document.getElementById("bgTrainBtn"),
     applyBtn: document.getElementById("applyBtn"),
     legalBtn: document.getElementById("legalBtn"),
     randomDiceBtn: document.getElementById("randomDiceBtn"),
+    showBestBtn: document.getElementById("showBestBtn"),
+    applyBestBtn: document.getElementById("applyBestBtn"),
+    autoTurnBtn: document.getElementById("autoTurnBtn"),
+    fullAutoBtn: document.getElementById("fullAutoBtn"),
     clearSelectionBtn: document.getElementById("clearSelectionBtn"),
     undoBtn: document.getElementById("undoBtn"),
     exportBtn: document.getElementById("exportBtn"),
     turnGuide: document.getElementById("turnGuide"),
     status: document.getElementById("status"),
+    bgTrainStatus: document.getElementById("bgTrainStatus"),
     selectedPath: document.getElementById("selectedPath"),
     board: document.getElementById("board"),
     barInfo: document.getElementById("barInfo"),
@@ -37,11 +51,12 @@
       "labels.gameType": "Тип игры",
       "labels.botSide": "Сторона бота",
       "labels.opponent": "Соперник",
-      "labels.think": "Время на ход (1-20)",
+      "labels.think": "Время на ход (1-5)",
       "labels.seed": "Seed",
       "labels.seedPlaceholder": "опционально",
       "labels.showTop3": "Показывать Top-3",
       "labels.lineIndex": "Линия (человек)",
+      "labels.diceInput": "Кубики / 4:2",
       "sections.setup": "Параметры партии",
       "sections.turn": "Ход",
       "sections.board": "Доска",
@@ -49,8 +64,17 @@
       "sections.log": "Лог ходов",
       "sections.analysis": "Анализ",
       "buttons.newGame": "Новая партия",
+      "buttons.selfLearn": "Самообучение",
+      "buttons.bgTrain": "Фоновый self-play",
+      "buttons.stopBgTrain": "Стоп training",
+      "buttons.syncDice": "Принять 4:2",
       "buttons.randomDice": "Случайные кубики",
       "buttons.rollTurn": "Бросить кубики и ходить",
+      "buttons.showBest": "Показать лучший ход",
+      "buttons.applyBest": "Применить лучший",
+      "buttons.autoTurn": "Автоход",
+      "buttons.fullAuto": "Full auto",
+      "buttons.stopAuto": "Стоп auto",
       "buttons.showLegal": "Показать легальные",
       "buttons.clearSelection": "Сброс выбора",
       "buttons.apply": "Применить ход",
@@ -97,9 +121,23 @@
       "status.autoBotMove": "Ход бота выполнен автоматически.",
       "status.autoNoMoves": "По этим кубикам ходов нет, выполнен пас.",
       "status.autoApplied": "Ход применён автоматически.",
+      "status.bestShown": "Лучший ход подсвечен. Можно применить сразу.",
+      "status.bestApplied": "Применён лучший ход.",
+      "status.fullAutoOn": "Полная автоигра запущена.",
+      "status.fullAutoOff": "Полная автоигра остановлена.",
+      "status.gameOver": "Партия завершена. Победили: {winner}.",
+      "status.badDiceFormat": "Введите кубики в формате 4:2.",
+      "status.selfLearnDone": "Самообучение завершено: {examples} примеров, avg err {error}.",
+      "status.selfLearnAccepted": "Новая модель принята: {examples} примеров, err {error}, winrate {winrate}.",
+      "status.selfLearnRejected": "Новая модель отклонена: winrate {winrate}, оставлен текущий чемпион.",
+      "status.selfLearnNeedGames": "Пока нет завершённых партий с человеком для обучения.",
+      "status.bgTrainOn": "Фоновое обучение запущено.",
+      "status.bgTrainOff": "Фоновое обучение остановлено.",
+      "status.bgTrainIdle": "Фоновое обучение: выкл.",
+      "status.bgTrainTick": "Фон: {games} игр, {examples} примеров, workers {workers}, err {error}.",
       "guide.idle": "1) Новая партия 2) Бросить кубики 3) Клик по фишке и точке назначения.",
       "guide.bot": "Сейчас ход бота: нажмите «Бросить кубики и ходить».",
-      "guide.humanDice": "Ваш ход: нажмите «Бросить кубики и ходить».",
+      "guide.humanDice": "Ваш ход: кликните по кубикам в центре или введите 4:2.",
       "guide.humanMove": "Ваш ход: кликайте по подсвеченным точкам, затем ход применится.",
       "path.empty": "Выбор хода: пока пусто.",
       "path.current": "Выбор хода: {path}",
@@ -138,6 +176,7 @@
       "errors.exportPath": "Путь экспорта пустой.",
       "errors.outOfRange": "Индекс линии вне диапазона.",
       "errors.illegalAnalysis": "Невозможно проанализировать нелегальный ход.",
+      "errors.badDiceFormat": "Неверный формат кубиков. Используйте 4:2.",
       "errors.generic": "Ошибка: {message}",
     },
     en: {
@@ -147,11 +186,12 @@
       "labels.gameType": "Game Type",
       "labels.botSide": "Bot Side",
       "labels.opponent": "Opponent",
-      "labels.think": "Think Time (1-20)",
+      "labels.think": "Think Time (1-5)",
       "labels.seed": "Seed",
       "labels.seedPlaceholder": "optional",
       "labels.showTop3": "Show Top-3",
       "labels.lineIndex": "Line (human)",
+      "labels.diceInput": "Dice / 4:2",
       "sections.setup": "Match Setup",
       "sections.turn": "Turn",
       "sections.board": "Board",
@@ -159,8 +199,17 @@
       "sections.log": "Move Log",
       "sections.analysis": "Analysis",
       "buttons.newGame": "New Game",
+      "buttons.selfLearn": "Self Learn",
+      "buttons.bgTrain": "Background Train",
+      "buttons.stopBgTrain": "Stop Training",
+      "buttons.syncDice": "Apply 4:2",
       "buttons.randomDice": "Random Dice",
       "buttons.rollTurn": "Roll Dice & Move",
+      "buttons.showBest": "Show Best Move",
+      "buttons.applyBest": "Apply Best",
+      "buttons.autoTurn": "Auto Turn",
+      "buttons.fullAuto": "Full Auto",
+      "buttons.stopAuto": "Stop Auto",
       "buttons.showLegal": "Show Legal",
       "buttons.clearSelection": "Clear Selection",
       "buttons.apply": "Apply Move",
@@ -207,9 +256,23 @@
       "status.autoBotMove": "Bot move applied automatically.",
       "status.autoNoMoves": "No moves for these dice, pass applied.",
       "status.autoApplied": "Move applied automatically.",
+      "status.bestShown": "Best move highlighted. You can apply it now.",
+      "status.bestApplied": "Best move applied.",
+      "status.fullAutoOn": "Full auto mode started.",
+      "status.fullAutoOff": "Full auto mode stopped.",
+      "status.gameOver": "Game over. Winner: {winner}.",
+      "status.badDiceFormat": "Enter dice as 4:2.",
+      "status.selfLearnDone": "Self-learning finished: {examples} examples, avg err {error}.",
+      "status.selfLearnAccepted": "New model accepted: {examples} examples, err {error}, winrate {winrate}.",
+      "status.selfLearnRejected": "New model rejected: winrate {winrate}, current champion kept.",
+      "status.selfLearnNeedGames": "No completed human games available for training yet.",
+      "status.bgTrainOn": "Background training started.",
+      "status.bgTrainOff": "Background training stopped.",
+      "status.bgTrainIdle": "Background training: off.",
+      "status.bgTrainTick": "Background: {games} games, {examples} examples, workers {workers}, err {error}.",
       "guide.idle": "1) New game 2) Roll dice 3) Click checker and destination.",
       "guide.bot": "Bot turn now: click 'Roll Dice & Move'.",
-      "guide.humanDice": "Your turn: click 'Roll Dice & Move'.",
+      "guide.humanDice": "Your turn: click center dice or enter 4:2.",
       "guide.humanMove": "Your turn: click highlighted points; move will apply automatically.",
       "path.empty": "Move selection: empty.",
       "path.current": "Move selection: {path}",
@@ -248,6 +311,7 @@
       "errors.exportPath": "Export path is empty.",
       "errors.outOfRange": "Line index is out of range.",
       "errors.illegalAnalysis": "Cannot analyze an illegal line.",
+      "errors.badDiceFormat": "Invalid dice format. Use 4:2.",
       "errors.generic": "Error: {message}",
     },
   };
@@ -260,6 +324,17 @@
     busy: false,
     diceRequestSeq: 0,
     lang: "ru",
+    auto: {
+      running: false,
+      uiDelay: 320,
+    },
+    bgTraining: {
+      running: false,
+      games: 0,
+      examples: 0,
+      last_train: null,
+      last_error: "",
+    },
     click: {
       d1: 0,
       d2: 0,
@@ -297,9 +372,144 @@
     return Number.isFinite(n) ? n : fallback;
   }
 
+  function parseDiceText(value) {
+    const m = String(value || "")
+      .trim()
+      .match(/^([1-6])\s*[:\-xх, ]\s*([1-6])$/i);
+    if (!m) {
+      return null;
+    }
+    return { d1: Number(m[1]), d2: Number(m[2]) };
+  }
+
+  function currentDice() {
+    return {
+      d1: safeInt(ui.d1.value, 0),
+      d2: safeInt(ui.d2.value, 0),
+    };
+  }
+
+  function syncDiceInputText() {
+    const { d1, d2 } = currentDice();
+    ui.diceInput.value = d1 >= 1 && d1 <= 6 && d2 >= 1 && d2 <= 6 ? `${d1}:${d2}` : "";
+  }
+
+  function buildDiceSlots() {
+    const { d1, d2 } = currentDice();
+    if (d1 < 1 || d1 > 6 || d2 < 1 || d2 > 6) {
+      return [];
+    }
+
+    const values = d1 === d2 ? [d1, d1, d1, d1] : [d1, d2];
+    const slots = values.map((value, index) => ({
+      value,
+      used: false,
+      editable: index < 2,
+      hidden: false,
+    }));
+    while (slots.length < 4) {
+      slots.push({ value: 0, used: false, editable: false, hidden: true });
+    }
+
+    for (const mv of state.click.path) {
+      const idx = slots.findIndex((slot) => !slot.hidden && !slot.used && slot.value === mv.die);
+      if (idx >= 0) {
+        slots[idx].used = true;
+      }
+    }
+    return slots;
+  }
+
+  function renderDiceTray() {
+    const buttons = [ui.dieBtn1, ui.dieBtn2, ui.dieBtn3, ui.dieBtn4];
+    const slots = buildDiceSlots();
+    buttons.forEach((btn, index) => {
+      const slot = slots[index];
+      if (!slot || slot.hidden) {
+        btn.className = "dieFace hidden";
+        btn.disabled = true;
+        btn.innerHTML = "";
+        return;
+      }
+
+      btn.className = `dieFace${slot.used ? " used" : ""}${slot.editable ? " editable" : " extra"}`;
+      btn.disabled = !slot.editable || state.busy;
+      btn.innerHTML = `<span class="dieValue">${slot.value}</span><span class="dieMeta">${slot.used ? "used" : slot.editable ? "click" : "double"}</span>`;
+    });
+  }
+
+  async function setDiceValues(d1, d2, triggerReload = true) {
+    ui.d1.value = String(d1);
+    ui.d2.value = String(d2);
+    syncDiceInputText();
+    renderDiceTray();
+    if (triggerReload) {
+      await onDiceChanged();
+    }
+  }
+
+  function lineIndexFor(line) {
+    if (!line) {
+      return -1;
+    }
+    const key = typeof line.key === "function" ? line.key() : formatLine(line);
+    const targetKey = line.moves ? line.moves.map((mv) => `${mv.from}>${mv.to}:${mv.die}`).join("|") : "";
+    return state.legalLines.findIndex((candidate) => {
+      if (!candidate || !candidate.moves) {
+        return false;
+      }
+      const candidateKey = candidate.moves.map((mv) => `${mv.from}>${mv.to}:${mv.die}`).join("|");
+      return candidateKey === targetKey || candidateKey === key;
+    });
+  }
+
+  function winnerLabel() {
+    if (!state.game || !Array.isArray(state.game.off)) {
+      return "";
+    }
+    if ((state.game.off[0] || 0) >= 15) {
+      return t("side.white");
+    }
+    if ((state.game.off[1] || 0) >= 15) {
+      return t("side.black");
+    }
+    return "";
+  }
+
+  function isGameOver() {
+    return !!winnerLabel();
+  }
+
+  function sleep(ms) {
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
+  }
+
   function setStatus(text, isError = false) {
     ui.status.textContent = text;
     ui.status.classList.toggle("error", !!isError);
+  }
+
+  function updateBackgroundTrainingUI() {
+    const status = state.bgTraining || {};
+    ui.bgTrainBtn.textContent = status.running ? t("buttons.stopBgTrain") : t("buttons.bgTrain");
+    if (!ui.bgTrainStatus) {
+      return;
+    }
+    if (!status.running && !status.games) {
+      ui.bgTrainStatus.textContent = t("status.bgTrainIdle");
+      ui.bgTrainStatus.classList.remove("error");
+      return;
+    }
+    const lastError = status.last_error || "";
+    const lastTrain = status.last_train || null;
+    const errorValue = lastError ? "ERR" : Number(lastTrain ? lastTrain.avg_abs_error || 0 : 0).toFixed(4);
+    ui.bgTrainStatus.textContent = t("status.bgTrainTick", {
+      games: status.games || 0,
+      examples: status.examples || 0,
+      workers: status.workers || 0,
+      error: errorValue,
+    });
+    ui.bgTrainStatus.classList.toggle("error", !!lastError);
   }
 
   function formatPoint(point) {
@@ -623,12 +833,23 @@
     state.busy = nextBusy;
     const disabled = !!nextBusy;
     ui.startBtn.disabled = disabled;
+    ui.selfLearnBtn.disabled = disabled;
+    ui.bgTrainBtn.disabled = false;
     ui.applyBtn.disabled = disabled;
     ui.legalBtn.disabled = disabled;
     ui.randomDiceBtn.disabled = disabled;
+    ui.showBestBtn.disabled = disabled;
+    ui.applyBestBtn.disabled = disabled;
+    ui.autoTurnBtn.disabled = disabled;
     ui.clearSelectionBtn.disabled = disabled;
     ui.undoBtn.disabled = disabled;
     ui.exportBtn.disabled = disabled;
+    ui.syncDiceBtn.disabled = disabled;
+    [ui.dieBtn1, ui.dieBtn2].forEach((btn) => {
+      btn.disabled = disabled;
+    });
+    ui.fullAutoBtn.disabled = false;
+    renderDiceTray();
     updateTurnGuide();
   }
 
@@ -699,6 +920,7 @@
   function updateSelectedPath() {
     if (state.click.path.length === 0) {
       ui.selectedPath.textContent = t("path.empty");
+      renderDiceTray();
       return;
     }
     let msg = t("path.current", { path: state.click.path.map((mv) => formatMove(mv)).join(" ") });
@@ -708,6 +930,7 @@
       msg += ` ${t("path.variants", { count: state.click.candidates.length })}`;
     }
     ui.selectedPath.textContent = msg;
+    renderDiceTray();
   }
 
   async function onPointClick(pointIdx) {
@@ -797,7 +1020,7 @@
     return lines;
   }
 
-  function handleApplyResponse(resp, d1, d2) {
+  function handleApplyResponse(resp, d1, d2, actor) {
     state.game = resp.state;
     state.isBotTurn = !!resp.isBotTurn;
 
@@ -807,24 +1030,23 @@
     refreshSnapshot();
     syncTurnStatus(resp);
 
-    if (resp.decision) {
-      renderTop3(resp.decision);
-      renderAnalysis(null);
+    renderTop3(resp.decision || null);
+    renderAnalysis(resp.analysis || null);
+
+    if (actor === "bot") {
       pushLog(
         t("log.botMove", {
           d1,
           d2,
-          line: formatLine(resp.decision.chosen_line),
-          prob: Number(resp.decision.chosen_prob || 0).toFixed(3),
+          line: formatLine(resp.decision ? resp.decision.chosen_line : resp.applied),
+          prob: Number(resp.decision ? resp.decision.chosen_prob || 0 : 0).toFixed(3),
         })
       );
       setStatus(t("status.autoBotMove"));
       return;
     }
 
-    renderTop3(null);
-    renderAnalysis(resp.analysis || null);
-    if (resp.applied) {
+    if (resp.applied && Array.isArray(resp.applied.moves) && resp.applied.moves.length > 0) {
       pushLog(t("log.humanMove", { d1, d2, line: formatLine(resp.applied) }));
     } else {
       pushLog(t("log.pass", { d1, d2 }));
@@ -842,7 +1064,7 @@
         gameType: ui.gameType.value,
         botSide: ui.botSide.value,
         opponent: ui.opponent.value,
-        thinkTime: safeInt(ui.thinkTime.value, 8),
+        thinkTime: safeInt(ui.thinkTime.value, 5),
         showTop3: ui.showTop3.checked,
         seed: safeInt(ui.seed.value, 0),
         logPath: "moves.jsonl",
@@ -850,12 +1072,18 @@
       const resp = await call("StartGame", req);
       state.game = resp.state;
       state.isBotTurn = !!resp.isBotTurn;
+      state.auto.running = false;
+      ui.fullAutoBtn.textContent = t("buttons.fullAuto");
+      ui.d1.value = "";
+      ui.d2.value = "";
+      syncDiceInputText();
       renderLegalLines([]);
       resetClickSelection(false);
       renderTop3(null);
       renderAnalysis(null);
       refreshSnapshot();
       renderBoard();
+      renderDiceTray();
       syncTurnStatus(resp);
       pushLog(
         t("log.newGame", {
@@ -907,6 +1135,126 @@
     }
   }
 
+  async function showBestMove() {
+    if (state.busy) {
+      setStatus(t("status.busy"));
+      return;
+    }
+    setBusy(true);
+    try {
+      if (!state.game) {
+        setStatus(t("status.noGame"), true);
+        return;
+      }
+      const { d1, d2 } = currentDice();
+      if (d1 < 1 || d1 > 6 || d2 < 1 || d2 > 6) {
+        setStatus(t("errors.dice"), true);
+        return;
+      }
+
+      const decision = await call("SuggestMove", d1, d2);
+      renderTop3(decision);
+      renderAnalysis({
+        category: "exact",
+        delta: 0,
+        best_line: decision.chosen_line,
+        best_winprob: decision.chosen_prob,
+      });
+
+      if (!state.isBotTurn) {
+        const lines = await ensureLegalLinesForDice(d1, d2);
+        const idx = lineIndexFor(decision.chosen_line);
+        if (idx >= 0 && idx < lines.length) {
+          ui.lineIndex.value = String(idx);
+          onLineSelected();
+        }
+      }
+      setStatus(t("status.bestShown"));
+    } catch (err) {
+      setStatus(translateErrorMessage(String(err)), true);
+    } finally {
+      setBusy(false);
+      updateTurnGuide();
+    }
+  }
+
+  async function applyBestMove() {
+    if (state.busy) {
+      setStatus(t("status.busy"));
+      return;
+    }
+    setBusy(true);
+    try {
+      if (!state.game) {
+        setStatus(t("status.noGame"), true);
+        return;
+      }
+      const { d1, d2 } = currentDice();
+      if (d1 < 1 || d1 > 6 || d2 < 1 || d2 > 6) {
+        setStatus(t("errors.dice"), true);
+        return;
+      }
+      const current = await call("State");
+      state.isBotTurn = !!current.isBotTurn;
+      const actor = state.isBotTurn ? "bot" : "human";
+      const resp = await call("ApplyBestMove", d1, d2);
+      handleApplyResponse(resp, d1, d2, actor);
+      if (actor === "human") {
+        const hasMoves = resp.applied && Array.isArray(resp.applied.moves) && resp.applied.moves.length > 0;
+        setStatus(t(hasMoves ? "status.bestApplied" : "status.autoNoMoves"));
+      }
+    } catch (err) {
+      setStatus(translateErrorMessage(String(err)), true);
+    } finally {
+      setBusy(false);
+      updateTurnGuide();
+    }
+  }
+
+  async function autoTurn() {
+    if (state.busy) {
+      setStatus(t("status.busy"));
+      return;
+    }
+    const d1 = Math.floor(Math.random() * 6) + 1;
+    const d2 = Math.floor(Math.random() * 6) + 1;
+    await setDiceValues(d1, d2, false);
+    await applyBestMove();
+  }
+
+  async function toggleFullAuto() {
+    if (!state.game) {
+      setStatus(t("status.noGame"), true);
+      return;
+    }
+    if (state.auto.running) {
+      state.auto.running = false;
+      ui.fullAutoBtn.textContent = t("buttons.fullAuto");
+      setStatus(t("status.fullAutoOff"));
+      return;
+    }
+
+    state.auto.running = true;
+    ui.fullAutoBtn.textContent = t("buttons.stopAuto");
+    setStatus(t("status.fullAutoOn"));
+
+    try {
+      while (state.auto.running && !isGameOver()) {
+        await sleep(state.auto.uiDelay);
+        await autoTurn();
+      }
+    } catch (err) {
+      setStatus(translateErrorMessage(String(err)), true);
+    } finally {
+      state.auto.running = false;
+      ui.fullAutoBtn.textContent = t("buttons.fullAuto");
+      if (isGameOver()) {
+        setStatus(t("status.gameOver", { winner: winnerLabel() }));
+      }
+      updateTurnGuide();
+    }
+  }
+
   async function applyDice(autoTriggered = false) {
     if (state.busy) {
       setStatus(t("status.busy"));
@@ -928,6 +1276,7 @@
 
       const current = await call("State");
       state.isBotTurn = !!current.isBotTurn;
+      const actor = state.isBotTurn ? "bot" : "human";
       let lineIndex = -1;
 
       if (!state.isBotTurn) {
@@ -954,7 +1303,7 @@
       }
 
       const resp = await call("ApplyDice", d1, d2, lineIndex);
-      handleApplyResponse(resp, d1, d2);
+      handleApplyResponse(resp, d1, d2, actor);
       if (autoTriggered && !resp.decision && resp.applied) {
         setStatus(t("status.autoApplied"));
       }
@@ -1010,6 +1359,68 @@
     }
   }
 
+  async function selfLearn() {
+    if (state.busy) {
+      setStatus(t("status.busy"));
+      return;
+    }
+    setBusy(true);
+    try {
+      const resp = await call("SelfLearn", 12);
+      const result = resp && resp.result ? resp.result : null;
+      if (!result) {
+        setStatus(t("status.selfLearnNeedGames"), true);
+        return;
+      }
+      const accepted = !!result.accepted;
+      const winrate = Number(result.validation_win_rate || 0).toFixed(3);
+      setStatus(
+        t(accepted ? "status.selfLearnAccepted" : "status.selfLearnRejected", {
+          examples: result.examples || 0,
+          error: Number(result.avg_abs_error || 0).toFixed(4),
+          winrate,
+        }),
+        !accepted
+      );
+      pushLog(
+        `train: ${result.model_name || "linear"} | accepted=${accepted ? "yes" : "no"} | examples=${result.examples || 0} | err=${Number(result.avg_abs_error || 0).toFixed(4)} | winrate=${winrate} | champion=${result.champion_model || "-"} | league=${result.league_size || 0}`
+      );
+    } catch (err) {
+      setStatus(translateErrorMessage(String(err)), true);
+    } finally {
+      setBusy(false);
+      updateTurnGuide();
+    }
+  }
+
+  async function refreshBackgroundTrainingStatus(silent = true) {
+    try {
+      const resp = await call("BackgroundTrainingStatus");
+      state.bgTraining = resp && resp.status ? resp.status : state.bgTraining;
+      updateBackgroundTrainingUI();
+    } catch (err) {
+      if (!silent) {
+        setStatus(translateErrorMessage(String(err)), true);
+      }
+    }
+  }
+
+  async function toggleBackgroundTraining() {
+    try {
+      const method = state.bgTraining && state.bgTraining.running ? "StopBackgroundTraining" : "StartBackgroundTraining";
+      const resp = await call(method);
+      state.bgTraining = resp && resp.status ? resp.status : state.bgTraining;
+      updateBackgroundTrainingUI();
+      setStatus(t(state.bgTraining.running ? "status.bgTrainOn" : "status.bgTrainOff"));
+      if (!state.bgTraining.running && state.bgTraining.last_train) {
+        const last = state.bgTraining.last_train;
+        pushLog(`bg-train: ${last.model_name || "linear"} | examples=${last.examples || 0} | err=${Number(last.avg_abs_error || 0).toFixed(4)}`);
+      }
+    } catch (err) {
+      setStatus(translateErrorMessage(String(err)), true);
+    }
+  }
+
   async function randomDice() {
     if (state.busy) {
       setStatus(t("status.busy"));
@@ -1017,8 +1428,7 @@
     }
     const d1 = Math.floor(Math.random() * 6) + 1;
     const d2 = Math.floor(Math.random() * 6) + 1;
-    ui.d1.value = String(d1);
-    ui.d2.value = String(d2);
+    await setDiceValues(d1, d2, false);
 
     if (!state.game) {
       setStatus(t("status.randomReady", { d1, d2 }));
@@ -1034,10 +1444,11 @@
 
       const current = await call("State");
       state.isBotTurn = !!current.isBotTurn;
+      const actor = state.isBotTurn ? "bot" : "human";
 
       if (state.isBotTurn) {
         const resp = await call("ApplyDice", d1, d2, -1);
-        handleApplyResponse(resp, d1, d2);
+        handleApplyResponse(resp, d1, d2, actor);
         return;
       }
 
@@ -1045,7 +1456,7 @@
       prepareInteractiveLines(lines, d1, d2);
       if (lines.length === 0) {
         const resp = await call("ApplyDice", d1, d2, -1);
-        handleApplyResponse(resp, d1, d2);
+        handleApplyResponse(resp, d1, d2, actor);
       } else if (lines.length === 1) {
         ui.lineIndex.value = "0";
         state.click.candidates = [0];
@@ -1054,7 +1465,7 @@
         updateSelectedPath();
         renderBoard();
         const resp = await call("ApplyDice", d1, d2, 0);
-        handleApplyResponse(resp, d1, d2);
+        handleApplyResponse(resp, d1, d2, actor);
         setStatus(t("status.autoApplied"));
       } else {
         setStatus(t("status.autoHumanReady"));
@@ -1067,6 +1478,26 @@
       }
       updateTurnGuide();
     }
+  }
+
+  async function applyDiceText() {
+    const parsed = parseDiceText(ui.diceInput.value);
+    if (!parsed) {
+      setStatus(t("errors.badDiceFormat"), true);
+      return;
+    }
+    await setDiceValues(parsed.d1, parsed.d2, true);
+  }
+
+  async function onDieButton(index) {
+    if (state.busy || index > 1) {
+      return;
+    }
+    const { d1, d2 } = currentDice();
+    const values = [d1, d2];
+    const next = values[index] >= 1 && values[index] <= 6 ? (values[index] % 6) + 1 : 1;
+    values[index] = next;
+    await setDiceValues(values[0], values[1], true);
   }
 
   function clearSelection() {
@@ -1169,10 +1600,14 @@
     setSelectText(ui.gameType, { short: t("options.short"), long: t("options.long") });
     setSelectText(ui.botSide, { white: t("options.white"), black: t("options.black") });
     setSelectText(ui.opponent, { human: t("options.human"), bot: t("options.bot") });
+    ui.fullAutoBtn.textContent = state.auto.running ? t("buttons.stopAuto") : t("buttons.fullAuto");
+    updateBackgroundTrainingUI();
 
     renderLegalLines(state.legalLines);
     updateSelectedPath();
     renderBoard();
+    syncDiceInputText();
+    renderDiceTray();
     renderAnalysis(null);
 
     if (!state.game) {
@@ -1196,24 +1631,38 @@
     if (m.includes("export path is empty")) return t("errors.exportPath");
     if (m.includes("line index out of range")) return t("errors.outOfRange");
     if (m.includes("illegal line for analysis")) return t("errors.illegalAnalysis");
+    if (m.includes("invalid dice format")) return t("errors.badDiceFormat");
+    if (m.includes("no completed human game examples") || m.includes("no training examples found")) return t("status.selfLearnNeedGames");
     return t("errors.generic", { message: msg });
   }
 
   ui.startBtn.addEventListener("click", startGame);
+  ui.selfLearnBtn.addEventListener("click", selfLearn);
+  ui.bgTrainBtn.addEventListener("click", toggleBackgroundTraining);
   ui.applyBtn.addEventListener("click", applyDice);
   ui.legalBtn.addEventListener("click", loadLegal);
   ui.randomDiceBtn.addEventListener("click", randomDice);
+  ui.showBestBtn.addEventListener("click", showBestMove);
+  ui.applyBestBtn.addEventListener("click", applyBestMove);
+  ui.autoTurnBtn.addEventListener("click", autoTurn);
+  ui.fullAutoBtn.addEventListener("click", toggleFullAuto);
+  ui.syncDiceBtn.addEventListener("click", applyDiceText);
   ui.clearSelectionBtn.addEventListener("click", clearSelection);
   ui.undoBtn.addEventListener("click", undo);
   ui.exportBtn.addEventListener("click", exportState);
   ui.lineIndex.addEventListener("change", onLineSelected);
-  ui.d1.addEventListener("input", onDiceChanged);
-  ui.d2.addEventListener("input", onDiceChanged);
+  ui.diceInput.addEventListener("change", applyDiceText);
   ui.langSelect.addEventListener("change", () => {
     state.lang = ui.langSelect.value === "en" ? "en" : "ru";
     applyLocale();
   });
+  ui.dieBtn1.addEventListener("click", () => onDieButton(0));
+  ui.dieBtn2.addEventListener("click", () => onDieButton(1));
 
   ui.langSelect.value = state.lang;
   applyLocale();
+  refreshBackgroundTrainingStatus(true);
+  window.setInterval(() => {
+    refreshBackgroundTrainingStatus(true);
+  }, 2500);
 })();

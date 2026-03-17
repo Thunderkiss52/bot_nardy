@@ -47,8 +47,8 @@
           </select>
         </label>
         <label>
-          <span data-i18n="labels.think">Время на ход (1-20)</span>
-          <input type="number" id="thinkTime" min="1" max="20" value="8" />
+          <span data-i18n="labels.think">Время на ход (1-5)</span>
+          <input type="number" id="thinkTime" min="1" max="5" value="5" />
         </label>
         <label>
           <span data-i18n="labels.seed">Seed</span>
@@ -57,31 +57,47 @@
       </div>
       <div class="row">
         <button id="startBtn" data-i18n="buttons.newGame">Новая партия</button>
+        <button id="selfLearnBtn" class="alt" data-i18n="buttons.selfLearn">Самообучение</button>
+        <button id="bgTrainBtn" class="alt" data-i18n="buttons.bgTrain">Фоновый self-play</button>
         <label class="switchWrap">
           <input type="checkbox" id="showTop3" checked />
           <span data-i18n="labels.showTop3">Показывать Top-3</span>
         </label>
       </div>
+      <div id="bgTrainStatus" class="status">Фоновое обучение: выкл.</div>
     </section>
 
     <section class="panel turn">
       <h2 data-i18n="sections.turn">Ход</h2>
-      <div class="grid turnGrid">
-        <label>
-          <span>D1</span>
-          <input type="number" id="d1" min="1" max="6" />
-        </label>
-        <label>
-          <span>D2</span>
-          <input type="number" id="d2" min="1" max="6" />
-        </label>
-        <label>
-          <span data-i18n="labels.lineIndex">Линия (человек)</span>
-          <select id="lineIndex"></select>
-        </label>
+      <input type="hidden" id="d1" />
+      <input type="hidden" id="d2" />
+      <div class="diceCenterStage">
+        <div class="diceHeader">
+          <label class="diceManual">
+            <span data-i18n="labels.diceInput">Кубики</span>
+            <input type="text" id="diceInput" placeholder="4:2" inputmode="numeric" />
+          </label>
+          <button id="syncDiceBtn" class="alt" data-i18n="buttons.syncDice">Применить 4:2</button>
+        </div>
+        <div id="diceTray" class="diceTray" aria-label="Dice tray">
+          <button id="dieBtn1" class="dieFace" type="button"></button>
+          <button id="dieBtn2" class="dieFace" type="button"></button>
+          <button id="dieBtn3" class="dieFace extra" type="button"></button>
+          <button id="dieBtn4" class="dieFace extra" type="button"></button>
+        </div>
+        <div class="grid turnGrid">
+          <label class="linePicker">
+            <span data-i18n="labels.lineIndex">Линия (человек)</span>
+            <select id="lineIndex"></select>
+          </label>
+        </div>
       </div>
       <div class="row">
         <button id="randomDiceBtn" data-i18n="buttons.rollTurn">Бросить кубики и ходить</button>
+        <button id="showBestBtn" class="alt" data-i18n="buttons.showBest">Показать лучший ход</button>
+        <button id="applyBestBtn" data-i18n="buttons.applyBest">Применить лучший</button>
+        <button id="autoTurnBtn" class="alt" data-i18n="buttons.autoTurn">Автоход</button>
+        <button id="fullAutoBtn" class="alt" data-i18n="buttons.fullAuto">Full auto</button>
         <button id="legalBtn" class="alt" data-i18n="buttons.showLegal">Показать легальные</button>
         <button id="clearSelectionBtn" class="alt" data-i18n="buttons.clearSelection">Сброс выбора</button>
         <button id="applyBtn" data-i18n="buttons.apply">Применить ход</button>

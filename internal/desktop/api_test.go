@@ -32,3 +32,71 @@ func TestApplyDiceHumanReturnsAnalysis(t *testing.T) {
 		t.Fatalf("expected analysis result")
 	}
 }
+
+func TestApplyBestMoveUsesStrongestLineForHumanTurn(t *testing.T) {
+	api, err := NewAPI("")
+	if err != nil {
+		t.Fatalf("new api: %v", err)
+	}
+	defer api.Close()
+
+	_, err = api.StartGame(StartRequest{
+		GameType:  "short",
+		BotSide:   "black",
+		Opponent:  "human",
+		ThinkTime: 1,
+		ShowTop3:  true,
+		Seed:      7,
+	})
+	if err != nil {
+		t.Fatalf("start game: %v", err)
+	}
+
+	decision, err := api.SuggestMove(3, 1)
+	if err != nil {
+		t.Fatalf("suggest move: %v", err)
+	}
+
+	resp, err := api.ApplyBestMove(3, 1)
+	if err != nil {
+		t.Fatalf("apply best move: %v", err)
+	}
+	if resp.Applied == nil {
+		t.Fatalf("expected applied line")
+	}
+	if resp.Applied.Key() != decision.ChosenLine.Key() {
+		t.Fatalf("expected best line %s, got %s", decision.ChosenLine, resp.Applied)
+	}
+	if resp.Analysis == nil || resp.Analysis.Category != "exact" {
+		t.Fatalf("expected exact analysis, got %+v", resp.Analysis)
+	}
+}
+
+func TestBackgroundTrainingLifecycle(t *testing.T) {
+	api, err := NewAPI("")
+	if err != nil {
+		t.Fatalf("new api: %v", err)
+	}
+	defer api.Close()
+
+	started, err := api.StartBackgroundTraining()
+	if err != nil {
+		t.Fatalf("start background training: %v", err)
+	}
+	if !started.Status.Running {
+		t.Fatalf("expected running background training")
+	}
+
+	status := api.BackgroundTrainingStatus()
+	if !status.Status.Running {
+		t.Fatalf("expected running status from background training status")
+	}
+
+	stopped, err := api.StopBackgroundTraining()
+	if err != nil {
+		t.Fatalf("stop background training: %v", err)
+	}
+	if stopped.Status.Running {
+		t.Fatalf("expected stopped background training")
+	}
+}

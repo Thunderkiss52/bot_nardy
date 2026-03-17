@@ -4,11 +4,12 @@ MVP backend implementation in Go with:
 
 - Deterministic game engine for `short` (backgammon) and `long` nardy.
 - Legal move generation with dice ordering, max dice usage, bar entry (short), head rule (long), and long blockade validation.
-- Monte-Carlo rollout bot with configurable think-time, parallel workers, top-K candidate filtering, CRN-style seeding, and early-stop by confidence intervals.
+- Monte-Carlo rollout bot with configurable think-time, parallel workers, top-K candidate filtering, response-aware pre-eval, CRN-style seeding, and early-stop by confidence intervals.
 - Analysis mode primitives (`exact/inaccuracy/mistake/blunder` + delta).
 - JSONL move logging.
+- Feature extraction + pluggable evaluator architecture (`heuristic` by default, linear weights file via env).
 - CLI (`cmd/nardy`) for manual dice input and validation.
-- Self-play benchmark CLI (`cmd/selfplay`) to estimate strong-vs-baseline win rate.
+- Self-play benchmark CLI (`cmd/selfplay`) to estimate strong-vs-baseline win rate and export training examples.
 - Desktop shell on Wails (`cmd/desktop`) with board, manual dice, Top-3, analysis, undo, and export.
 - Quality runner (`cmd/quality`) with winrate + AEL + blunder metrics.
 
@@ -16,9 +17,11 @@ MVP backend implementation in Go with:
 
 ```bash
 go test ./...
-go run ./cmd/nardy -game short -bot black -opponent human -think 8
+go run ./cmd/nardy -game short -bot black -opponent human -think 5
 go run ./cmd/selfplay -game short -n 200 -strong-think 4 -base-think 1
+go run ./cmd/selfplay -game short -n 200 -strong-think 4 -base-think 1 -dataset-out train.jsonl
 go run ./cmd/quality -game both -n 300 -strong-think 800ms -baseline-think 120ms
+go run ./cmd/night -rounds 8 -selfplay-games 48 -epochs 12 -think 2 -log-dir ./night_logs
 
 # desktop UI (requires Wails SDK + deps)
 go run -tags wails ./cmd/desktop
@@ -34,12 +37,14 @@ GOCACHE=/tmp/go-cache go run github.com/wailsapp/wails/v2/cmd/wails@v2.11.0 buil
 
 - `internal/engine`: state model, rules, move generation, invariants.
 - `internal/bot`: heuristics and rollout search.
+- `internal/training`: JSONL dataset export types for self-play training.
 - `internal/app`: high-level game service APIs (ready for Wails bindings).
 - `internal/desktop`: Wails-facing API bridge.
 - `internal/logging`: JSONL move logger.
 - `cmd/nardy`: manual play loop for MVP verification.
 - `cmd/selfplay`: benchmark runner.
 - `cmd/quality`: quality metrics runner.
+- `cmd/night`: unattended train/validate league runner for long overnight improvement cycles.
 - `cmd/desktop`: desktop app entrypoint (`main_stub.go` by default, `main_wails.go` with `-tags wails`).
 - `cmd/desktop/frontend`: static desktop UI assets.
 
@@ -47,6 +52,28 @@ GOCACHE=/tmp/go-cache go run github.com/wailsapp/wails/v2/cmd/wails@v2.11.0 buil
 
 Desktop mode uses local static frontend assets with Wails bindings (`window.go.desktop.API`).
 `cmd/quality` is intended for threshold tracking from the technical spec.
+To load learned linear weights without code changes, set `BOT_NARDY_WEIGHTS_PATH=/path/to/weights.json`.
+Weights file format:
+
+```json
+{
+  "name": "linear-v1",
+  "bias": 0.0,
+  "weights": {
+    "pip_self": -1.0,
+    "pip_opp": 1.0,
+    "made_self": 2.5
+  }
+}
+```
+
+Self-play dataset export writes per-move JSONL examples with:
+- normalized state key
+- dice and chosen move
+- legal count
+- extracted feature vector
+- final winner / outcome value
+`cmd/night` runs repeated self-play -> retrain -> league-selection rounds and only keeps the strongest champion model.
 Cross-compiling Wails desktop to macOS from Linux is not supported by Wails. Use a macOS host or `.github/workflows/build-macos-desktop.yml`.
 
 For GitLab CI use `.gitlab-ci.yml` with a macOS runner tagged `macos`. Build artifact is uploaded as `build/bin/desktop-nardy-engine-macos.zip`.

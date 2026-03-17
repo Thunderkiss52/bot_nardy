@@ -16,7 +16,7 @@ func main() {
 	game := flag.String("game", "short", "short|long")
 	botSide := flag.String("bot", "black", "white|black")
 	opponent := flag.String("opponent", "human", "human|bot")
-	think := flag.Int("think", 8, "think time seconds (1..20)")
+	think := flag.Int("think", 5, "think time seconds (1..5)")
 	seed := flag.Int64("seed", 0, "optional random seed")
 	logPath := flag.String("log", "moves.jsonl", "path for JSONL move logs")
 	flag.Parse()
