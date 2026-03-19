@@ -36,6 +36,67 @@ export namespace app {
 		    return a;
 		}
 	}
+	export class BackgroundTrainingStatus {
+	    running: boolean;
+	    games: number;
+	    examples: number;
+	    workers: number;
+	    // Go type: time
+	    started_at: any;
+	    last_train?: training.TrainSummary;
+	    last_error?: string;
+	    game_type: string;
+	    think_time_sec: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new BackgroundTrainingStatus(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.running = source["running"];
+	        this.games = source["games"];
+	        this.examples = source["examples"];
+	        this.workers = source["workers"];
+	        this.started_at = this.convertValues(source["started_at"], null);
+	        this.last_train = this.convertValues(source["last_train"], training.TrainSummary);
+	        this.last_error = source["last_error"];
+	        this.game_type = source["game_type"];
+	        this.think_time_sec = source["think_time_sec"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class ImportLogResult {
+	    path: string;
+	    imported: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new ImportLogResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.imported = source["imported"];
+	    }
+	}
 
 }
 
@@ -120,6 +181,96 @@ export namespace bot {
 
 export namespace desktop {
 	
+	export class BackgroundTrainingResponse {
+	    status: app.BackgroundTrainingStatus;
+	
+	    static createFrom(source: any = {}) {
+	        return new BackgroundTrainingResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.status = this.convertValues(source["status"], app.BackgroundTrainingStatus);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class ImportLogResponse {
+	    result: app.ImportLogResult;
+	
+	    static createFrom(source: any = {}) {
+	        return new ImportLogResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.result = this.convertValues(source["result"], app.ImportLogResult);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class SelfLearnResponse {
+	    result: training.TrainSummary;
+	
+	    static createFrom(source: any = {}) {
+	        return new SelfLearnResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.result = this.convertValues(source["result"], training.TrainSummary);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class StartRequest {
 	    gameType: string;
 	    botSide: string;
@@ -302,6 +453,55 @@ export namespace engine {
 		    }
 		    return a;
 		}
+	}
+
+}
+
+export namespace training {
+	
+	export class TrainSummary {
+	    examples: number;
+	    train_examples: number;
+	    validation_examples: number;
+	    epochs: number;
+	    learning_rate: number;
+	    l2: number;
+	    avg_abs_error: number;
+	    validation_abs_error: number;
+	    best_epoch: number;
+	    weights_path: string;
+	    model_name: string;
+	    accepted: boolean;
+	    validation_games: number;
+	    validation_win_rate: number;
+	    league_size: number;
+	    champion_model: string;
+	    champion_score: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new TrainSummary(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.examples = source["examples"];
+	        this.train_examples = source["train_examples"];
+	        this.validation_examples = source["validation_examples"];
+	        this.epochs = source["epochs"];
+	        this.learning_rate = source["learning_rate"];
+	        this.l2 = source["l2"];
+	        this.avg_abs_error = source["avg_abs_error"];
+	        this.validation_abs_error = source["validation_abs_error"];
+	        this.best_epoch = source["best_epoch"];
+	        this.weights_path = source["weights_path"];
+	        this.model_name = source["model_name"];
+	        this.accepted = source["accepted"];
+	        this.validation_games = source["validation_games"];
+	        this.validation_win_rate = source["validation_win_rate"];
+	        this.league_size = source["league_size"];
+	        this.champion_model = source["champion_model"];
+	        this.champion_score = source["champion_score"];
+	    }
 	}
 
 }

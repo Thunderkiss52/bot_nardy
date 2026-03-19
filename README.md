@@ -22,6 +22,9 @@ go run ./cmd/selfplay -game short -n 200 -strong-think 4 -base-think 1
 go run ./cmd/selfplay -game short -n 200 -strong-think 4 -base-think 1 -dataset-out train.jsonl
 go run ./cmd/quality -game both -n 300 -strong-think 800ms -baseline-think 120ms
 go run ./cmd/night -rounds 8 -selfplay-games 48 -epochs 12 -think 2 -log-dir ./night_logs
+go run ./cmd/bkgmfetch -out ./bkgm_corpus.jsonl -max-pages 200
+go run ./cmd/gnubgimport -in ./moves.jsonl -out ./gnubg_teacher.jsonl -gnubg /usr/bin/gnubg
+go run ./cmd/teacherquality -in ./gnubg_teacher.jsonl -think 2s
 
 # desktop UI (requires Wails SDK + deps)
 go run -tags wails ./cmd/desktop
@@ -45,6 +48,9 @@ GOCACHE=/tmp/go-cache go run github.com/wailsapp/wails/v2/cmd/wails@v2.11.0 buil
 - `cmd/selfplay`: benchmark runner.
 - `cmd/quality`: quality metrics runner.
 - `cmd/night`: unattended train/validate league runner for long overnight improvement cycles.
+- `cmd/bkgmfetch`: crawler for public BKGM articles/matches/glossary into local JSONL corpus.
+- `cmd/gnubgimport`: GNU Backgammon teacher-label import for `moves.jsonl` -> training JSONL.
+- `cmd/teacherquality`: evaluates current bot against GNU BG labeled positions.
 - `cmd/desktop`: desktop app entrypoint (`main_stub.go` by default, `main_wails.go` with `-tags wails`).
 - `cmd/desktop/frontend`: static desktop UI assets.
 
@@ -74,6 +80,9 @@ Self-play dataset export writes per-move JSONL examples with:
 - extracted feature vector
 - final winner / outcome value
 `cmd/night` runs repeated self-play -> retrain -> league-selection rounds and only keeps the strongest champion model.
+`cmd/bkgmfetch` is meant for building a local study corpus from public pages on `bkgm.com`; use the resulting JSONL for hints/explanations or as preprocessing input for later structured match parsers.
+`cmd/gnubgimport` assumes GNU Backgammon CLI is installed locally. It can relabel both `moves.jsonl` and self-play/training JSONL as long as entries contain `state_before`, `dice` and `chosen_line`, then emits JSONL compatible with `ImportMoveLog` / `SelfLearn`.
+`cmd/teacherquality` reports how often the current bot matches GNU BG top-1/top-k on a teacher-labeled dataset and estimates average teacher loss.
 Cross-compiling Wails desktop to macOS from Linux is not supported by Wails. Use a macOS host or `.github/workflows/build-macos-desktop.yml`.
 
 For GitLab CI use `.gitlab-ci.yml` with a macOS runner tagged `macos`. Build artifact is uploaded as `build/bin/desktop-nardy-engine-macos.zip`.

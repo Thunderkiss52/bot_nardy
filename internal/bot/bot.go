@@ -24,8 +24,13 @@ type Config struct {
 }
 
 type Bot struct {
-	cfg       Config
-	lineCache sync.Map
+	cfg                Config
+	lineCache          *boundedCache[[]engine.TurnLine]
+	scoreCache         *boundedCache[float64]
+	replyEquityCache   *boundedCache[float64]
+	replyBestCache     *boundedCache[float64]
+	counterEquityCache *boundedCache[float64]
+	openingBook        *boundedCache[string]
 }
 
 type MoveEvaluation struct {
@@ -78,7 +83,15 @@ func New(cfg Config) *Bot {
 	if cfg.Evaluator == nil {
 		cfg.Evaluator = defaultEvaluator
 	}
-	return &Bot{cfg: cfg}
+	return &Bot{
+		cfg:                cfg,
+		lineCache:          newBoundedCache[[]engine.TurnLine](20_000),
+		scoreCache:         newBoundedCache[float64](40_000),
+		replyEquityCache:   newBoundedCache[float64](20_000),
+		replyBestCache:     newBoundedCache[float64](30_000),
+		counterEquityCache: newBoundedCache[float64](10_000),
+		openingBook:        newBoundedCache[string](2_048),
+	}
 }
 
 func (b *Bot) ChooseMove(state engine.GameState, d1, d2 int) (Decision, error) {
@@ -98,7 +111,11 @@ func (b *Bot) ChooseMove(state engine.GameState, d1, d2 int) (Decision, error) {
 		}, nil
 	}
 
-	cands := b.prepareCandidates(state, legal)
+	preferredLineKey, hasPreferred := b.lookupOpeningBook(state, d1, d2)
+	cands := b.prepareCandidates(state, legal, preferredLineKey)
+	if isOpeningPosition(state) && !hasPreferred {
+		b.refineOpeningCandidates(state, cands)
+	}
 	if len(cands) == 0 {
 		return Decision{}, errors.New("no candidates")
 	}
@@ -161,17 +178,20 @@ func (b *Bot) ChooseMove(state engine.GameState, d1, d2 int) (Decision, error) {
 		Top3:         evals[:top3N],
 		ThinkElapsed: time.Since(start),
 		Seed:         b.cfg.Seed,
-	}, nil
+	}, b.storeOpeningBook(state, d1, d2, evals[0].Line)
 }
 
-func (b *Bot) prepareCandidates(state engine.GameState, legal []engine.TurnLine) []*candidate {
+func (b *Bot) prepareCandidates(state engine.GameState, legal []engine.TurnLine, preferredLineKey string) []*candidate {
 	cands := make([]*candidate, 0, len(legal))
 	for _, line := range legal {
 		next, err := engine.ApplyTurnLine(state, line)
 		if err != nil {
 			continue
 		}
-		fast := b.scorePosition(next, state.Turn) + tacticalLineScore(state, next, line)
+		fast := b.scorePosition(next, state.Turn) + tacticalLineScore(state, next, line) + openingBias(state, next, line)
+		if preferredLineKey != "" && line.Key() == preferredLineKey {
+			fast += 24.0
+		}
 		cands = append(cands, &candidate{line: line, state: next, score: fast, fast: fast})
 	}
 	sort.Slice(cands, func(i, j int) bool {
@@ -228,6 +248,37 @@ func (b *Bot) prepareCandidates(state engine.GameState, legal []engine.TurnLine)
 	return cands
 }
 
+func (b *Bot) refineOpeningCandidates(state engine.GameState, cands []*candidate) {
+	if !isOpeningPosition(state) || len(cands) == 0 {
+		return
+	}
+
+	counterK := len(cands)
+	if counterK > 4 {
+		counterK = 4
+	}
+	replyWorkers := b.replyWorkers(21)
+	for i := 0; i < counterK; i++ {
+		counter := b.expectedCounterPlayEquity(cands[i].state, state.Turn, replyWorkers)
+		cands[i].score = 0.18*cands[i].fast + 0.42*cands[i].score + 0.40*counter
+	}
+	sort.Slice(cands, func(i, j int) bool {
+		if cands[i].score == cands[j].score {
+			if cands[i].fast == cands[j].fast {
+				return cands[i].line.Key() < cands[j].line.Key()
+			}
+			return cands[i].fast > cands[j].fast
+		}
+		return cands[i].score > cands[j].score
+	})
+	if len(cands) > b.cfg.TopK {
+		cands = cands[:b.cfg.TopK]
+	}
+	for _, cand := range cands {
+		cand.prior = scoreToWinProb(cand.score)
+	}
+}
+
 func (b *Bot) deepCandidateCount() int {
 	switch {
 	case b.cfg.ThinkTime <= 500*time.Millisecond:
@@ -248,6 +299,11 @@ func (b *Bot) expectedReplyEquity(state engine.GameState, perspective engine.Col
 }
 
 func (b *Bot) expectedReplyEquityWithWorkers(state engine.GameState, perspective engine.Color, workers int) float64 {
+	cacheKey := replyEquityCacheKey(state, perspective)
+	if cached, ok := b.replyEquityCache.Get(cacheKey); ok {
+		return cached
+	}
+
 	outcomes := weightedDiceOutcomes()
 	workers = b.replyWorkersForBudget(len(outcomes), workers)
 	totalWeight := 0.0
@@ -300,9 +356,68 @@ func (b *Bot) expectedReplyEquityWithWorkers(state engine.GameState, perspective
 	}
 
 	if totalWeight == 0 {
-		return EvaluatePosition(state, perspective)
+		score := b.scorePosition(state, perspective)
+		b.replyEquityCache.Set(cacheKey, score)
+		return score
 	}
-	return totalScore / totalWeight
+	score := totalScore / totalWeight
+	b.replyEquityCache.Set(cacheKey, score)
+	return score
+}
+
+func (b *Bot) expectedCounterPlayEquity(state engine.GameState, perspective engine.Color, workers int) float64 {
+	cacheKey := replyEquityCacheKey(state, perspective) + "|counter"
+	if cached, ok := b.counterEquityCache.Get(cacheKey); ok {
+		return cached
+	}
+
+	outcomes := weightedDiceOutcomes()
+	totalWeight := 0.0
+	totalScore := 0.0
+	for _, dice := range outcomes {
+		lines, err := b.generateLines(state, dice.d1, dice.d2)
+		if err != nil {
+			continue
+		}
+		if len(lines) == 0 {
+			passed := state.Clone()
+			passed.Turn = passed.Turn.Opponent()
+			passed.Meta.MoveNumber++
+			totalScore += dice.weight * b.expectedReplyEquityWithWorkers(passed, perspective, workers)
+			totalWeight += dice.weight
+			continue
+		}
+
+		bestReply := state
+		bestReplySet := false
+		best := math.Inf(-1)
+		replyPlayer := state.Turn
+		for _, line := range lines {
+			next, err := engine.ApplyTurnLine(state, line)
+			if err != nil {
+				continue
+			}
+			replyScore := b.scorePosition(next, replyPlayer) + tacticalLineScore(state, next, line) + openingBias(state, next, line)
+			if replyScore > best {
+				best = replyScore
+				bestReply = next
+				bestReplySet = true
+			}
+		}
+		if !bestReplySet {
+			continue
+		}
+		totalScore += dice.weight * b.expectedReplyEquityWithWorkers(bestReply, perspective, workers)
+		totalWeight += dice.weight
+	}
+	if totalWeight == 0 {
+		score := b.scorePosition(state, perspective)
+		b.counterEquityCache.Set(cacheKey, score)
+		return score
+	}
+	score := totalScore / totalWeight
+	b.counterEquityCache.Set(cacheKey, score)
+	return score
 }
 
 func (b *Bot) replyOutcomeScore(state engine.GameState, perspective engine.Color, dice weightedDice) (float64, bool) {
@@ -316,7 +431,14 @@ func (b *Bot) replyOutcomeScore(state engine.GameState, perspective engine.Color
 		passed.Meta.MoveNumber++
 		return b.scorePosition(passed, perspective), true
 	}
-	return b.bestReplyScore(state, lines, perspective), true
+
+	cacheKey := replyBestCacheKey(state, perspective, dice.d1, dice.d2)
+	if cached, ok := b.replyBestCache.Get(cacheKey); ok {
+		return cached, true
+	}
+	score := b.bestReplyScore(state, lines, perspective)
+	b.replyBestCache.Set(cacheKey, score)
+	return score, true
 }
 
 func (b *Bot) bestReplyScore(state engine.GameState, lines []engine.TurnLine, perspective engine.Color) float64 {
@@ -329,7 +451,7 @@ func (b *Bot) bestReplyScore(state engine.GameState, lines []engine.TurnLine, pe
 		if err != nil {
 			continue
 		}
-		replyScore := b.scorePosition(next, replyPlayer) + tacticalLineScore(state, next, line)
+		replyScore := b.scorePosition(next, replyPlayer) + tacticalLineScore(state, next, line) + openingBias(state, next, line)
 		if replyScore > best {
 			best = replyScore
 			bestScoreForPerspective = b.scorePosition(next, perspective)
@@ -400,7 +522,7 @@ func (b *Bot) selectPolicyMove(state engine.GameState, lines []engine.TurnLine, 
 		if err != nil {
 			continue
 		}
-		s := b.scorePosition(next, state.Turn)
+		s := b.scorePosition(next, state.Turn) + tacticalLineScore(state, next, line) + openingBias(state, next, line)
 		s += rng.Float64() * 0.01
 		if s > bestScore {
 			best = line
@@ -550,14 +672,14 @@ func (b *Bot) Evaluate(state engine.GameState, perspective engine.Color) float64
 
 func (b *Bot) generateLines(state engine.GameState, d1, d2 int) ([]engine.TurnLine, error) {
 	key := fmt.Sprintf("%s|%d:%d", state.NormalizeKey(), d1, d2)
-	if cached, ok := b.lineCache.Load(key); ok {
-		return cached.([]engine.TurnLine), nil
+	if cached, ok := b.lineCache.Get(key); ok {
+		return cached, nil
 	}
 	lines, err := engine.GenerateLegalLines(state, d1, d2)
 	if err != nil {
 		return nil, err
 	}
-	b.lineCache.Store(key, lines)
+	b.lineCache.Set(key, lines)
 	return lines, nil
 }
 
@@ -575,6 +697,78 @@ func weightedDiceOutcomes() []weightedDice {
 	return outcomes
 }
 
+func isOpeningPosition(state engine.GameState) bool {
+	return state.Meta.MoveNumber <= 1
+}
+
+func (b *Bot) lookupOpeningBook(state engine.GameState, d1, d2 int) (string, bool) {
+	if !isOpeningPosition(state) {
+		return "", false
+	}
+	key := fmt.Sprintf("%s|opening|%d:%d", state.NormalizeKey(), d1, d2)
+	if cached, ok := b.openingBook.Get(key); ok {
+		return cached, true
+	}
+	return "", false
+}
+
+func (b *Bot) storeOpeningBook(state engine.GameState, d1, d2 int, line engine.TurnLine) error {
+	if !isOpeningPosition(state) || len(line.Moves) == 0 {
+		return nil
+	}
+	key := fmt.Sprintf("%s|opening|%d:%d", state.NormalizeKey(), d1, d2)
+	b.openingBook.Set(key, line.Key())
+	return nil
+}
+
 func (b *Bot) scorePosition(state engine.GameState, perspective engine.Color) float64 {
-	return b.cfg.Evaluator.Evaluate(state, perspective)
+	cacheKey := scoreCacheKey(state, perspective)
+	if cached, ok := b.scoreCache.Get(cacheKey); ok {
+		return cached
+	}
+	score := b.cfg.Evaluator.Evaluate(state, perspective)
+	b.scoreCache.Set(cacheKey, score)
+	return score
+}
+
+func scoreCacheKey(state engine.GameState, perspective engine.Color) string {
+	return state.NormalizeKey() + "|" + perspective.String()
+}
+
+func replyEquityCacheKey(state engine.GameState, perspective engine.Color) string {
+	return state.NormalizeKey() + "|reply|" + perspective.String()
+}
+
+func replyBestCacheKey(state engine.GameState, perspective engine.Color, d1, d2 int) string {
+	return fmt.Sprintf("%s|bestreply|%s|%d:%d", state.NormalizeKey(), perspective.String(), d1, d2)
+}
+
+func openingBias(before, after engine.GameState, line engine.TurnLine) float64 {
+	if before.Meta.MoveNumber > 1 {
+		return 0
+	}
+
+	player := before.Turn
+	score := 0.0
+
+	switch before.GameType {
+	case engine.GameShort:
+		score += float64(engine.HomeMadePoints(after, player)-engine.HomeMadePoints(before, player)) * 6.0
+		score += float64(engine.CountMadePoints(after, player)-engine.CountMadePoints(before, player)) * 3.0
+		score += float64(engine.CountAnchorsShort(after, player)-engine.CountAnchorsShort(before, player)) * 2.2
+		score += float64(engine.CountEscapedCheckersShort(after, player)-engine.CountEscapedCheckersShort(before, player)) * 1.6
+		score -= float64(engine.CountExposedBlotsShort(after, player)-engine.CountExposedBlotsShort(before, player)) * 3.0
+		score -= float64(engine.CountBlots(after, player)-engine.CountBlots(before, player)) * 1.2
+	case engine.GameLong:
+		score += float64(engine.CountMadePoints(after, player)-engine.CountMadePoints(before, player)) * 2.5
+		score += float64(engine.MaxBlockRunLong(after, player)-engine.MaxBlockRunLong(before, player)) * 2.4
+		score += float64(engine.Spread(before, player)-engine.Spread(after, player)) * 0.8
+		score -= float64(engine.CheckersOnHead(after, player)-engine.CheckersOnHead(before, player)) * 1.0
+		score -= float64(engine.CountSingletons(after, player)-engine.CountSingletons(before, player)) * 0.8
+	}
+
+	if len(line.Moves) == 0 {
+		score -= 2.0
+	}
+	return score
 }

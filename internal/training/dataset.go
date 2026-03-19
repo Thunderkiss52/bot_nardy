@@ -10,6 +10,7 @@ import (
 )
 
 type Example struct {
+	StateBefore   engine.GameState  `json:"state_before,omitempty"`
 	GameType      string            `json:"game_type"`
 	StateKey      string            `json:"state_key"`
 	Perspective   string            `json:"perspective"`

@@ -45,6 +45,7 @@ type LinearEvaluator struct {
 	name    string
 	bias    float64
 	weights map[string]float64
+	scales  map[string]float64
 	base    Evaluator
 }
 
@@ -52,13 +53,14 @@ type linearWeightsFile struct {
 	Name    string             `json:"name"`
 	Bias    float64            `json:"bias"`
 	Weights map[string]float64 `json:"weights"`
+	Scales  map[string]float64 `json:"scales,omitempty"`
 }
 
-func NewLinearEvaluator(name string, bias float64, weights map[string]float64, base Evaluator) *LinearEvaluator {
+func NewLinearEvaluator(name string, bias float64, weights map[string]float64, scales map[string]float64, base Evaluator) *LinearEvaluator {
 	if base == nil {
 		base = defaultEvaluator
 	}
-	return &LinearEvaluator{name: name, bias: bias, weights: weights, base: base}
+	return &LinearEvaluator{name: name, bias: bias, weights: weights, scales: scales, base: base}
 }
 
 func (e *LinearEvaluator) Name() string {
@@ -75,7 +77,13 @@ func (e *LinearEvaluator) Evaluate(state engine.GameState, perspective engine.Co
 	features := ExtractFeatures(state, perspective).Values()
 	score := e.bias
 	for key, value := range features {
-		score += e.weights[key] * value
+		scale := 1.0
+		if e.scales != nil {
+			if s := e.scales[key]; s > 0 {
+				scale = s
+			}
+		}
+		score += e.weights[key] * (value / scale)
 	}
 	if e.base != nil {
 		score += 0.15 * e.base.Evaluate(state, perspective)
@@ -92,7 +100,7 @@ func LoadLinearEvaluator(path string, base Evaluator) (Evaluator, error) {
 	if err := json.Unmarshal(raw, &cfg); err != nil {
 		return nil, err
 	}
-	return NewLinearEvaluator(cfg.Name, cfg.Bias, cfg.Weights, base), nil
+	return NewLinearEvaluator(cfg.Name, cfg.Bias, cfg.Weights, cfg.Scales, base), nil
 }
 
 func ResolveEvaluatorFromEnv() (Evaluator, error) {

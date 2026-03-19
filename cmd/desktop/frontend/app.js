@@ -22,7 +22,6 @@
     bgTrainBtn: document.getElementById("bgTrainBtn"),
     applyBtn: document.getElementById("applyBtn"),
     legalBtn: document.getElementById("legalBtn"),
-    randomDiceBtn: document.getElementById("randomDiceBtn"),
     showBestBtn: document.getElementById("showBestBtn"),
     applyBestBtn: document.getElementById("applyBestBtn"),
     autoTurnBtn: document.getElementById("autoTurnBtn"),
@@ -46,7 +45,7 @@
   const I18N = {
     ru: {
       "hero.title": "Движок Нард",
-      "hero.subtitle": "Играй с ботом: выбирай кубики, кликай по фишкам и делай ходы на доске.",
+      "hero.subtitle": "Играй с ботом: кубики закреплены сверху, бросок делается кликом по ним, ручной ввод 4:2 сохранён.",
       "labels.language": "Язык",
       "labels.gameType": "Тип игры",
       "labels.botSide": "Сторона бота",
@@ -57,6 +56,7 @@
       "labels.showTop3": "Показывать Top-3",
       "labels.lineIndex": "Линия (человек)",
       "labels.diceInput": "Кубики / 4:2",
+      "labels.diceHint": "Клик по кубикам в центре = бросок. Ввод 4:2 оставлен для ручного режима.",
       "sections.setup": "Параметры партии",
       "sections.turn": "Ход",
       "sections.board": "Доска",
@@ -67,9 +67,7 @@
       "buttons.selfLearn": "Самообучение",
       "buttons.bgTrain": "Фоновый self-play",
       "buttons.stopBgTrain": "Стоп training",
-      "buttons.syncDice": "Принять 4:2",
-      "buttons.randomDice": "Случайные кубики",
-      "buttons.rollTurn": "Бросить кубики и ходить",
+      "buttons.syncDice": "Ввести 4:2",
       "buttons.showBest": "Показать лучший ход",
       "buttons.applyBest": "Применить лучший",
       "buttons.autoTurn": "Автоход",
@@ -80,7 +78,7 @@
       "buttons.apply": "Применить ход",
       "buttons.undo": "Отменить",
       "buttons.export": "Экспорт",
-      "hint.click": "Для хода: нажми «Бросить кубики и ходить», затем кликай по подсвеченным фишкам и целям.",
+      "hint.click": "Для хода: кликни по кубикам в центре, затем кликай по подсвеченным фишкам и целям.",
       "options.short": "Короткие",
       "options.long": "Длинные",
       "options.white": "Белые",
@@ -109,7 +107,7 @@
       "status.selectionCleared": "Выбор хода сброшен.",
       "status.lineSelected": "Линия #{index} собрана кликами. Можно применять ход.",
       "status.stepAccepted": "Добавлен шаг: {from}/{to}({die}).",
-      "status.randomReady": "Кубики брошены: {d1}-{d2}.",
+      "status.randomReady": "Кубики в центре: {d1}-{d2}.",
       "status.diceChanged": "Кубики изменились. Проверьте легальные ходы заново.",
       "status.exported": "Экспортировано в {path}",
       "status.noGame": "Сначала начните новую партию.",
@@ -135,10 +133,13 @@
       "status.bgTrainOff": "Фоновое обучение остановлено.",
       "status.bgTrainIdle": "Фоновое обучение: выкл.",
       "status.bgTrainTick": "Фон: {games} игр, {examples} примеров, workers {workers}, err {error}.",
-      "guide.idle": "1) Новая партия 2) Бросить кубики 3) Клик по фишке и точке назначения.",
-      "guide.bot": "Сейчас ход бота: нажмите «Бросить кубики и ходить».",
+      "guide.idle": "1) Новая партия 2) Клик по кубикам в центре 3) Клик по фишке и точке назначения.",
+      "guide.bot": "Сейчас ход бота: кликни по кубикам в центре, чтобы он сделал ход.",
       "guide.humanDice": "Ваш ход: кликните по кубикам в центре или введите 4:2.",
       "guide.humanMove": "Ваш ход: кликайте по подсвеченным точкам, затем ход применится.",
+      "dice.roll": "бросок",
+      "dice.used": "исп.",
+      "dice.double": "дубль",
       "path.empty": "Выбор хода: пока пусто.",
       "path.current": "Выбор хода: {path}",
       "path.ready": "Линия готова к применению.",
@@ -181,7 +182,7 @@
     },
     en: {
       "hero.title": "Nardy Engine",
-      "hero.subtitle": "Play with the bot: choose dice, click checkers, and move directly on the board.",
+      "hero.subtitle": "Play the bot: dice stay pinned at the top, click them to roll, or enter 4:2 manually.",
       "labels.language": "Language",
       "labels.gameType": "Game Type",
       "labels.botSide": "Bot Side",
@@ -192,6 +193,7 @@
       "labels.showTop3": "Show Top-3",
       "labels.lineIndex": "Line (human)",
       "labels.diceInput": "Dice / 4:2",
+      "labels.diceHint": "Click the center dice to roll. Manual 4:2 input is still available.",
       "sections.setup": "Match Setup",
       "sections.turn": "Turn",
       "sections.board": "Board",
@@ -202,9 +204,7 @@
       "buttons.selfLearn": "Self Learn",
       "buttons.bgTrain": "Background Train",
       "buttons.stopBgTrain": "Stop Training",
-      "buttons.syncDice": "Apply 4:2",
-      "buttons.randomDice": "Random Dice",
-      "buttons.rollTurn": "Roll Dice & Move",
+      "buttons.syncDice": "Set 4:2",
       "buttons.showBest": "Show Best Move",
       "buttons.applyBest": "Apply Best",
       "buttons.autoTurn": "Auto Turn",
@@ -215,7 +215,7 @@
       "buttons.apply": "Apply Move",
       "buttons.undo": "Undo",
       "buttons.export": "Export",
-      "hint.click": "To move: click 'Roll Dice & Move', then click highlighted checkers and targets.",
+      "hint.click": "To move: click the center dice, then click highlighted checkers and targets.",
       "options.short": "Short",
       "options.long": "Long",
       "options.white": "White",
@@ -244,7 +244,7 @@
       "status.selectionCleared": "Move selection cleared.",
       "status.lineSelected": "Line #{index} built by clicks. You can apply move now.",
       "status.stepAccepted": "Step added: {from}/{to}({die}).",
-      "status.randomReady": "Dice rolled: {d1}-{d2}.",
+      "status.randomReady": "Center dice: {d1}-{d2}.",
       "status.diceChanged": "Dice changed. Re-check legal lines.",
       "status.exported": "Exported to {path}",
       "status.noGame": "Start a new game first.",
@@ -270,10 +270,13 @@
       "status.bgTrainOff": "Background training stopped.",
       "status.bgTrainIdle": "Background training: off.",
       "status.bgTrainTick": "Background: {games} games, {examples} examples, workers {workers}, err {error}.",
-      "guide.idle": "1) New game 2) Roll dice 3) Click checker and destination.",
-      "guide.bot": "Bot turn now: click 'Roll Dice & Move'.",
+      "guide.idle": "1) New game 2) Click the center dice 3) Click checker and destination.",
+      "guide.bot": "Bot turn now: click the center dice to let it play.",
       "guide.humanDice": "Your turn: click center dice or enter 4:2.",
       "guide.humanMove": "Your turn: click highlighted points; move will apply automatically.",
+      "dice.roll": "roll",
+      "dice.used": "used",
+      "dice.double": "double",
       "path.empty": "Move selection: empty.",
       "path.current": "Move selection: {path}",
       "path.ready": "Line is ready to apply.",
@@ -432,9 +435,11 @@
         return;
       }
 
-      btn.className = `dieFace${slot.used ? " used" : ""}${slot.editable ? " editable" : " extra"}`;
-      btn.disabled = !slot.editable || state.busy;
-      btn.innerHTML = `<span class="dieValue">${slot.value}</span><span class="dieMeta">${slot.used ? "used" : slot.editable ? "click" : "double"}</span>`;
+      const canRoll = !state.busy;
+      btn.className = `dieFace${slot.used ? " used" : ""}${slot.editable ? " editable" : " extra"}${canRoll ? " rollable" : ""}`;
+      btn.disabled = !canRoll;
+      const metaKey = slot.used ? "dice.used" : slot.editable ? "dice.roll" : "dice.double";
+      btn.innerHTML = `<span class="dieValue">${slot.value}</span><span class="dieMeta">${t(metaKey)}</span>`;
     });
   }
 
@@ -837,7 +842,6 @@
     ui.bgTrainBtn.disabled = false;
     ui.applyBtn.disabled = disabled;
     ui.legalBtn.disabled = disabled;
-    ui.randomDiceBtn.disabled = disabled;
     ui.showBestBtn.disabled = disabled;
     ui.applyBestBtn.disabled = disabled;
     ui.autoTurnBtn.disabled = disabled;
@@ -1489,15 +1493,11 @@
     await setDiceValues(parsed.d1, parsed.d2, true);
   }
 
-  async function onDieButton(index) {
-    if (state.busy || index > 1) {
+  async function onDieButton() {
+    if (state.busy) {
       return;
     }
-    const { d1, d2 } = currentDice();
-    const values = [d1, d2];
-    const next = values[index] >= 1 && values[index] <= 6 ? (values[index] % 6) + 1 : 1;
-    values[index] = next;
-    await setDiceValues(values[0], values[1], true);
+    await randomDice();
   }
 
   function clearSelection() {
@@ -1641,7 +1641,6 @@
   ui.bgTrainBtn.addEventListener("click", toggleBackgroundTraining);
   ui.applyBtn.addEventListener("click", applyDice);
   ui.legalBtn.addEventListener("click", loadLegal);
-  ui.randomDiceBtn.addEventListener("click", randomDice);
   ui.showBestBtn.addEventListener("click", showBestMove);
   ui.applyBestBtn.addEventListener("click", applyBestMove);
   ui.autoTurnBtn.addEventListener("click", autoTurn);
@@ -1656,8 +1655,9 @@
     state.lang = ui.langSelect.value === "en" ? "en" : "ru";
     applyLocale();
   });
-  ui.dieBtn1.addEventListener("click", () => onDieButton(0));
-  ui.dieBtn2.addEventListener("click", () => onDieButton(1));
+  [ui.dieBtn1, ui.dieBtn2, ui.dieBtn3, ui.dieBtn4].forEach((btn) => {
+    btn.addEventListener("click", onDieButton);
+  });
 
   ui.langSelect.value = state.lang;
   applyLocale();

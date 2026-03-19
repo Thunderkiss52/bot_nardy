@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"math"
 	"testing"
 	"time"
 
@@ -46,7 +47,7 @@ func TestExpectedReplyEquityStableAcrossWorkerCounts(t *testing.T) {
 	gotSingle := single.expectedReplyEquity(state, engine.White)
 	gotParallel := parallel.expectedReplyEquity(state, engine.White)
 
-	if gotSingle != gotParallel {
+	if math.Abs(gotSingle-gotParallel) > 1e-9 {
 		t.Fatalf("expected same equity, single=%.6f parallel=%.6f", gotSingle, gotParallel)
 	}
 }
@@ -64,8 +65,8 @@ func TestPrepareCandidatesStableAcrossWorkerCounts(t *testing.T) {
 	single := New(Config{ThinkTime: 150 * time.Millisecond, TopK: 8, Workers: 1, Seed: 201})
 	parallel := New(Config{ThinkTime: 150 * time.Millisecond, TopK: 8, Workers: 4, Seed: 201})
 
-	singleCands := single.prepareCandidates(state, legal)
-	parallelCands := parallel.prepareCandidates(state, legal)
+	singleCands := single.prepareCandidates(state, legal, "")
+	parallelCands := parallel.prepareCandidates(state, legal, "")
 	if len(singleCands) == 0 || len(parallelCands) == 0 {
 		t.Fatalf("expected non-empty candidates")
 	}

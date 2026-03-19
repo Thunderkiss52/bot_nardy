@@ -22,6 +22,50 @@
       </label>
     </header>
 
+    <section class="panel turn">
+      <div class="turnHeader">
+        <h2 data-i18n="sections.turn">Ход</h2>
+        <div class="diceCenterCopy" data-i18n="labels.diceHint">Клик по кубикам в центре = бросок. Ввод 4:2 оставлен для ручного режима.</div>
+      </div>
+      <input type="hidden" id="d1" />
+      <input type="hidden" id="d2" />
+      <div class="diceCenterStage">
+        <div class="diceHeader">
+          <label class="diceManual">
+            <span data-i18n="labels.diceInput">Кубики</span>
+            <input type="text" id="diceInput" placeholder="4:2" inputmode="numeric" />
+          </label>
+          <button id="syncDiceBtn" class="alt" data-i18n="buttons.syncDice">Ввести 4:2</button>
+        </div>
+        <div id="diceTray" class="diceTray" aria-label="Dice tray">
+          <button id="dieBtn1" class="dieFace" type="button"></button>
+          <button id="dieBtn2" class="dieFace" type="button"></button>
+          <button id="dieBtn3" class="dieFace extra" type="button"></button>
+          <button id="dieBtn4" class="dieFace extra" type="button"></button>
+        </div>
+        <div class="grid turnGrid">
+          <label class="linePicker">
+            <span data-i18n="labels.lineIndex">Линия (человек)</span>
+            <select id="lineIndex"></select>
+          </label>
+        </div>
+      </div>
+      <div class="row">
+        <button id="startBtn" data-i18n="buttons.newGame">Новая партия</button>
+        <button id="showBestBtn" class="alt" data-i18n="buttons.showBest">Показать лучший ход</button>
+        <button id="applyBestBtn" data-i18n="buttons.applyBest">Применить лучший</button>
+        <button id="autoTurnBtn" class="alt" data-i18n="buttons.autoTurn">Автоход</button>
+        <button id="fullAutoBtn" class="alt" data-i18n="buttons.fullAuto">Full auto</button>
+        <button id="legalBtn" class="alt" data-i18n="buttons.showLegal">Показать легальные</button>
+        <button id="clearSelectionBtn" class="alt" data-i18n="buttons.clearSelection">Сброс выбора</button>
+        <button id="applyBtn" data-i18n="buttons.apply">Применить ход</button>
+        <button id="undoBtn" class="alt" data-i18n="buttons.undo">Отменить</button>
+      </div>
+      <div id="turnGuide" class="turnGuide">1) Новая партия 2) Клик по кубикам в центре 3) Клик по фишке и точке назначения.</div>
+      <div id="selectedPath" class="selectedPath">Выбор хода: пока пусто.</div>
+      <div id="status" class="status"></div>
+    </section>
+
     <section class="panel controls">
       <h2 data-i18n="sections.setup">Параметры партии</h2>
       <div class="grid setupGrid">
@@ -56,9 +100,9 @@
         </label>
       </div>
       <div class="row">
-        <button id="startBtn" data-i18n="buttons.newGame">Новая партия</button>
         <button id="selfLearnBtn" class="alt" data-i18n="buttons.selfLearn">Самообучение</button>
         <button id="bgTrainBtn" class="alt" data-i18n="buttons.bgTrain">Фоновый self-play</button>
+        <button id="exportBtn" class="alt" data-i18n="buttons.export">Экспорт</button>
         <label class="switchWrap">
           <input type="checkbox" id="showTop3" checked />
           <span data-i18n="labels.showTop3">Показывать Top-3</span>
@@ -67,52 +111,10 @@
       <div id="bgTrainStatus" class="status">Фоновое обучение: выкл.</div>
     </section>
 
-    <section class="panel turn">
-      <h2 data-i18n="sections.turn">Ход</h2>
-      <input type="hidden" id="d1" />
-      <input type="hidden" id="d2" />
-      <div class="diceCenterStage">
-        <div class="diceHeader">
-          <label class="diceManual">
-            <span data-i18n="labels.diceInput">Кубики</span>
-            <input type="text" id="diceInput" placeholder="4:2" inputmode="numeric" />
-          </label>
-          <button id="syncDiceBtn" class="alt" data-i18n="buttons.syncDice">Применить 4:2</button>
-        </div>
-        <div id="diceTray" class="diceTray" aria-label="Dice tray">
-          <button id="dieBtn1" class="dieFace" type="button"></button>
-          <button id="dieBtn2" class="dieFace" type="button"></button>
-          <button id="dieBtn3" class="dieFace extra" type="button"></button>
-          <button id="dieBtn4" class="dieFace extra" type="button"></button>
-        </div>
-        <div class="grid turnGrid">
-          <label class="linePicker">
-            <span data-i18n="labels.lineIndex">Линия (человек)</span>
-            <select id="lineIndex"></select>
-          </label>
-        </div>
-      </div>
-      <div class="row">
-        <button id="randomDiceBtn" data-i18n="buttons.rollTurn">Бросить кубики и ходить</button>
-        <button id="showBestBtn" class="alt" data-i18n="buttons.showBest">Показать лучший ход</button>
-        <button id="applyBestBtn" data-i18n="buttons.applyBest">Применить лучший</button>
-        <button id="autoTurnBtn" class="alt" data-i18n="buttons.autoTurn">Автоход</button>
-        <button id="fullAutoBtn" class="alt" data-i18n="buttons.fullAuto">Full auto</button>
-        <button id="legalBtn" class="alt" data-i18n="buttons.showLegal">Показать легальные</button>
-        <button id="clearSelectionBtn" class="alt" data-i18n="buttons.clearSelection">Сброс выбора</button>
-        <button id="applyBtn" data-i18n="buttons.apply">Применить ход</button>
-        <button id="undoBtn" class="alt" data-i18n="buttons.undo">Отменить</button>
-        <button id="exportBtn" class="alt" data-i18n="buttons.export">Экспорт</button>
-      </div>
-      <div id="turnGuide" class="turnGuide">1) Новая партия 2) Бросить кубики 3) Клик по фишке и точке назначения.</div>
-      <div id="selectedPath" class="selectedPath">Выбор хода: пока пусто.</div>
-      <div id="status" class="status"></div>
-    </section>
-
     <section class="layout">
       <article class="panel boardPanel">
         <h2 data-i18n="sections.board">Доска</h2>
-        <p class="hint" data-i18n="hint.click">Для хода: нажми «Бросить кубики и ходить», затем кликай по подсвеченным фишкам и целям.</p>
+        <p class="hint" data-i18n="hint.click">Для хода: кликни по кубикам в центре, затем кликай по подсвеченным фишкам и целям.</p>
         <div class="boardStats">
           <div id="barInfo" class="statBadge">Бар: Б 0 | Ч 0</div>
           <div id="offInfo" class="statBadge">Вынос: Б 0 | Ч 0</div>

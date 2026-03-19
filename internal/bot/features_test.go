@@ -38,7 +38,7 @@ func TestLinearEvaluatorUsesFeatureWeights(t *testing.T) {
 	ev := NewLinearEvaluator("test", 3, map[string]float64{
 		"pip_self": -1,
 		"pip_opp":  1,
-	}, nil)
+	}, nil, nil)
 	score := ev.Evaluate(s, engine.White)
 	if score == 0 {
 		t.Fatalf("expected non-zero score")

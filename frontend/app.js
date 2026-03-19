@@ -5,15 +5,22 @@
     opponent: document.getElementById("opponent"),
     thinkTime: document.getElementById("thinkTime"),
     showTop3: document.getElementById("showTop3"),
+    autoHumanRoll: document.getElementById("autoHumanRoll"),
     seed: document.getElementById("seed"),
     d1: document.getElementById("d1"),
     d2: document.getElementById("d2"),
+    diceInput: document.getElementById("diceInput"),
+    syncDiceBtn: document.getElementById("syncDiceBtn"),
+    diceTray: document.getElementById("diceTray"),
+    dieBtn1: document.getElementById("dieBtn1"),
+    dieBtn2: document.getElementById("dieBtn2"),
+    dieBtn3: document.getElementById("dieBtn3"),
+    dieBtn4: document.getElementById("dieBtn4"),
     lineIndex: document.getElementById("lineIndex"),
     langSelect: document.getElementById("langSelect"),
     startBtn: document.getElementById("startBtn"),
     applyBtn: document.getElementById("applyBtn"),
     legalBtn: document.getElementById("legalBtn"),
-    randomDiceBtn: document.getElementById("randomDiceBtn"),
     clearSelectionBtn: document.getElementById("clearSelectionBtn"),
     undoBtn: document.getElementById("undoBtn"),
     exportBtn: document.getElementById("exportBtn"),
@@ -32,16 +39,19 @@
   const I18N = {
     ru: {
       "hero.title": "Движок Нард",
-      "hero.subtitle": "Играй с ботом: выбирай кубики, кликай по фишкам и делай ходы на доске.",
+      "hero.subtitle": "Играй с ботом: кости находятся у самой доски, бросок делается кликом по ним, ручной ввод 4:2 доступен рядом.",
       "labels.language": "Язык",
       "labels.gameType": "Тип игры",
       "labels.botSide": "Сторона бота",
       "labels.opponent": "Соперник",
-      "labels.think": "Время на ход (1-20)",
+      "labels.think": "Время на ход (1-5)",
       "labels.seed": "Seed",
       "labels.seedPlaceholder": "опционально",
       "labels.showTop3": "Показывать Top-3",
+      "labels.autoHumanRoll": "Автокубики игрока",
       "labels.lineIndex": "Линия (человек)",
+      "labels.diceInput": "Кубики / 4:2",
+      "labels.diceHint": "Кости встроены в доску. Клик по ним бросает ход, ввод 4:2 находится рядом с доской.",
       "sections.setup": "Параметры партии",
       "sections.turn": "Ход",
       "sections.board": "Доска",
@@ -49,14 +59,13 @@
       "sections.log": "Лог ходов",
       "sections.analysis": "Анализ",
       "buttons.newGame": "Новая партия",
-      "buttons.randomDice": "Случайные кубики",
-      "buttons.rollTurn": "Бросить кубики и ходить",
+      "buttons.syncDice": "Бросить эти кости",
       "buttons.showLegal": "Показать легальные",
       "buttons.clearSelection": "Сброс выбора",
       "buttons.apply": "Применить ход",
       "buttons.undo": "Отменить",
       "buttons.export": "Экспорт",
-      "hint.click": "Для хода: нажми «Бросить кубики и ходить», затем кликай по подсвеченным фишкам и целям.",
+      "hint.click": "Для хода: кликни по костям на доске, затем кликай по подсвеченным фишкам и целям.",
       "options.short": "Короткие",
       "options.long": "Длинные",
       "options.white": "Белые",
@@ -85,7 +94,7 @@
       "status.selectionCleared": "Выбор хода сброшен.",
       "status.lineSelected": "Линия #{index} собрана кликами. Можно применять ход.",
       "status.stepAccepted": "Добавлен шаг: {from}/{to}({die}).",
-      "status.randomReady": "Кубики брошены: {d1}-{d2}.",
+      "status.randomReady": "Кости на доске: {d1}-{d2}.",
       "status.diceChanged": "Кубики изменились. Проверьте легальные ходы заново.",
       "status.exported": "Экспортировано в {path}",
       "status.noGame": "Сначала начните новую партию.",
@@ -97,10 +106,14 @@
       "status.autoBotMove": "Ход бота выполнен автоматически.",
       "status.autoNoMoves": "По этим кубикам ходов нет, выполнен пас.",
       "status.autoApplied": "Ход применён автоматически.",
-      "guide.idle": "1) Новая партия 2) Бросить кубики 3) Клик по фишке и точке назначения.",
-      "guide.bot": "Сейчас ход бота: нажмите «Бросить кубики и ходить».",
-      "guide.humanDice": "Ваш ход: нажмите «Бросить кубики и ходить».",
+      "guide.idle": "1) Новая партия 2) Клик по костям на доске 3) Клик по фишке и точке назначения.",
+      "guide.bot": "Сейчас ход бота: он сам бросит и сходит.",
+      "guide.humanDice": "Ваш ход: кликните по костям на доске или введите 4:2.",
       "guide.humanMove": "Ваш ход: кликайте по подсвеченным точкам, затем ход применится.",
+      "dice.roll": "бросок",
+      "dice.used": "исп.",
+      "dice.double": "дубль",
+      "dice.empty": "жми",
       "path.empty": "Выбор хода: пока пусто.",
       "path.current": "Выбор хода: {path}",
       "path.ready": "Линия готова к применению.",
@@ -130,7 +143,7 @@
       "log.export": "экспорт: {path}",
       "prompt.export": "Путь для экспорта состояния",
       "errors.wails": "Wails API недоступен. Соберите приложение с тегом '-tags wails'.",
-      "errors.dice": "Кубики должны быть в диапазоне 1..6.",
+      "errors.dice": "Кубики должны быть в диапазоне 1..6. Можно вводить 42, 4 2 или 4:2.",
       "errors.lineRequired": "Нужно выбрать линию для хода человека.",
       "errors.turnBot": "Сейчас ход бота.",
       "errors.turnHuman": "Сейчас ход человека.",
@@ -142,16 +155,19 @@
     },
     en: {
       "hero.title": "Nardy Engine",
-      "hero.subtitle": "Play with the bot: choose dice, click checkers, and move directly on the board.",
+      "hero.subtitle": "Play the bot: dice live next to the board, click them to roll, or enter 4:2 nearby.",
       "labels.language": "Language",
       "labels.gameType": "Game Type",
       "labels.botSide": "Bot Side",
       "labels.opponent": "Opponent",
-      "labels.think": "Think Time (1-20)",
+      "labels.think": "Think Time (1-5)",
       "labels.seed": "Seed",
       "labels.seedPlaceholder": "optional",
       "labels.showTop3": "Show Top-3",
+      "labels.autoHumanRoll": "Auto Human Dice",
       "labels.lineIndex": "Line (human)",
+      "labels.diceInput": "Dice / 4:2",
+      "labels.diceHint": "Dice are built into the board area. Click them to roll, or enter 4:2 beside the board.",
       "sections.setup": "Match Setup",
       "sections.turn": "Turn",
       "sections.board": "Board",
@@ -159,14 +175,13 @@
       "sections.log": "Move Log",
       "sections.analysis": "Analysis",
       "buttons.newGame": "New Game",
-      "buttons.randomDice": "Random Dice",
-      "buttons.rollTurn": "Roll Dice & Move",
+      "buttons.syncDice": "Roll These Dice",
       "buttons.showLegal": "Show Legal",
       "buttons.clearSelection": "Clear Selection",
       "buttons.apply": "Apply Move",
       "buttons.undo": "Undo",
       "buttons.export": "Export",
-      "hint.click": "To move: click 'Roll Dice & Move', then click highlighted checkers and targets.",
+      "hint.click": "To move: click the board dice, then click highlighted checkers and targets.",
       "options.short": "Short",
       "options.long": "Long",
       "options.white": "White",
@@ -195,7 +210,7 @@
       "status.selectionCleared": "Move selection cleared.",
       "status.lineSelected": "Line #{index} built by clicks. You can apply move now.",
       "status.stepAccepted": "Step added: {from}/{to}({die}).",
-      "status.randomReady": "Dice rolled: {d1}-{d2}.",
+      "status.randomReady": "Board dice: {d1}-{d2}.",
       "status.diceChanged": "Dice changed. Re-check legal lines.",
       "status.exported": "Exported to {path}",
       "status.noGame": "Start a new game first.",
@@ -207,10 +222,14 @@
       "status.autoBotMove": "Bot move applied automatically.",
       "status.autoNoMoves": "No moves for these dice, pass applied.",
       "status.autoApplied": "Move applied automatically.",
-      "guide.idle": "1) New game 2) Roll dice 3) Click checker and destination.",
-      "guide.bot": "Bot turn now: click 'Roll Dice & Move'.",
-      "guide.humanDice": "Your turn: click 'Roll Dice & Move'.",
+      "guide.idle": "1) New game 2) Click the board dice 3) Click checker and destination.",
+      "guide.bot": "Bot turn now: it will roll and play automatically.",
+      "guide.humanDice": "Your turn: click the board dice or enter 4:2.",
       "guide.humanMove": "Your turn: click highlighted points; move will apply automatically.",
+      "dice.roll": "roll",
+      "dice.used": "used",
+      "dice.double": "double",
+      "dice.empty": "tap",
       "path.empty": "Move selection: empty.",
       "path.current": "Move selection: {path}",
       "path.ready": "Line is ready to apply.",
@@ -240,7 +259,7 @@
       "log.export": "export: {path}",
       "prompt.export": "Export path",
       "errors.wails": "Wails API unavailable. Build app with '-tags wails'.",
-      "errors.dice": "Dice must be in range 1..6.",
+      "errors.dice": "Dice must be in range 1..6. You can enter 42, 4 2, or 4:2.",
       "errors.lineRequired": "A line is required for human turn.",
       "errors.turnBot": "Current turn belongs to bot.",
       "errors.turnHuman": "Current turn belongs to human.",
@@ -269,6 +288,10 @@
       selectableFrom: new Set(),
       selectableTo: new Set(),
     },
+    animation: {
+      queue: [],
+      playing: false,
+    },
   };
 
   const topRow = [13, 14, 15, 16, 17, 18, null, 19, 20, 21, 22, 23, 24];
@@ -295,6 +318,109 @@
   function safeInt(value, fallback) {
     const n = Number.parseInt(value, 10);
     return Number.isFinite(n) ? n : fallback;
+  }
+
+  function parseDiceText(text) {
+    const digits = String(text || "").replace(/\D/g, "");
+    if (digits.length !== 2) {
+      return null;
+    }
+    const d1 = Number(digits[0]);
+    const d2 = Number(digits[1]);
+    if (d1 < 1 || d1 > 6 || d2 < 1 || d2 > 6) {
+      return null;
+    }
+    return { d1, d2 };
+  }
+
+  function currentDice() {
+    return {
+      d1: safeInt(ui.d1.value, 0),
+      d2: safeInt(ui.d2.value, 0),
+    };
+  }
+
+  function syncDiceInputText() {
+    if (!ui.diceInput) {
+      return;
+    }
+    const { d1, d2 } = currentDice();
+    ui.diceInput.value = d1 >= 1 && d1 <= 6 && d2 >= 1 && d2 <= 6 ? `${d1}:${d2}` : "";
+  }
+
+  function buildDiceSlots() {
+    const { d1, d2 } = currentDice();
+    if (d1 < 1 || d1 > 6 || d2 < 1 || d2 > 6) {
+      return [
+        { value: "?", used: false, hidden: false, metaKey: "dice.empty" },
+        { value: "?", used: false, hidden: false, metaKey: "dice.empty" },
+        { value: "", used: false, hidden: true, metaKey: "dice.empty" },
+        { value: "", used: false, hidden: true, metaKey: "dice.empty" },
+      ];
+    }
+
+    const values = d1 === d2 ? [d1, d1, d1, d1] : [d1, d2];
+    const slots = values.map((value) => ({
+      value,
+      used: false,
+      hidden: false,
+      metaKey: d1 === d2 ? "dice.double" : "dice.roll",
+    }));
+    while (slots.length < 4) {
+      slots.push({ value: "", used: false, hidden: true, metaKey: "dice.empty" });
+    }
+    for (const mv of state.click.path) {
+      const idx = slots.findIndex((slot) => !slot.hidden && !slot.used && Number(slot.value) === mv.die);
+      if (idx >= 0) {
+        slots[idx].used = true;
+        slots[idx].metaKey = "dice.used";
+      }
+    }
+    return slots;
+  }
+
+  function pipMarkup(value) {
+    const layouts = {
+      1: [0, 0, 0, 0, 1, 0, 0, 0, 0],
+      2: [1, 0, 0, 0, 0, 0, 0, 0, 1],
+      3: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+      4: [1, 0, 1, 0, 0, 0, 1, 0, 1],
+      5: [1, 0, 1, 0, 1, 0, 1, 0, 1],
+      6: [1, 0, 1, 1, 0, 1, 1, 0, 1],
+    };
+    const cells = layouts[value] || [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    return cells.map((filled) => `<span class="pip${filled ? "" : " hidden"}"></span>`).join("");
+  }
+
+  function renderDiceTray() {
+    if (!ui.dieBtn1) {
+      return;
+    }
+    const buttons = [ui.dieBtn1, ui.dieBtn2, ui.dieBtn3, ui.dieBtn4];
+    const slots = buildDiceSlots();
+    buttons.forEach((btn, index) => {
+      const slot = slots[index];
+      if (!slot || slot.hidden) {
+        btn.className = "dieFace hidden";
+        btn.disabled = true;
+        btn.innerHTML = "";
+        return;
+      }
+      btn.className = `dieFace${slot.used ? " used" : ""} rollable`;
+      btn.disabled = !!state.busy;
+      const valueMarkup = Number.isFinite(Number(slot.value)) ? pipMarkup(Number(slot.value)) : slot.value;
+      btn.innerHTML = `<span class="dieValue">${valueMarkup}</span><span class="dieMeta">${t(slot.metaKey)}</span>`;
+    });
+  }
+
+  async function setDiceValues(d1, d2, triggerReload = true) {
+    ui.d1.value = String(d1);
+    ui.d2.value = String(d2);
+    syncDiceInputText();
+    renderDiceTray();
+    if (triggerReload) {
+      await onDiceChanged();
+    }
   }
 
   function setStatus(text, isError = false) {
@@ -335,6 +461,10 @@
     return el;
   }
 
+  function checkerColorClassForPlayer(player) {
+    return ownerClass(player);
+  }
+
   function makeStackCount(count) {
     const countBadge = document.createElement("div");
     countBadge.className = "stackCount";
@@ -373,8 +503,164 @@
     return state.click.path.some((mv) => mv.from === pointIdx || mv.to === pointIdx);
   }
 
-  function createPoint(pointIdx, rowType, colIndex) {
-    const pointState = state.game.points[pointIdx] || { owner: 0, count: 0 };
+  function cloneGameStateForPreview(src) {
+    return {
+      ...src,
+      points: src.points.map((point) => ({ owner: point.owner, count: point.count })),
+      off: src.off.slice(),
+      bar: src.bar.slice(),
+      meta: { ...src.meta },
+    };
+  }
+
+  function applyPreviewLine(baseState, moves) {
+    const preview = cloneGameStateForPreview(baseState);
+    const player = preview.turn;
+    const opp = player === 1 ? 2 : 1;
+    const playerIdx = player === 1 ? 0 : 1;
+    const oppIdx = opp === 1 ? 0 : 1;
+
+    for (const mv of moves) {
+      if (mv.from === 0) {
+        preview.bar[playerIdx] = Math.max(0, (preview.bar[playerIdx] || 0) - 1);
+      } else {
+        const src = preview.points[mv.from];
+        src.count = Math.max(0, (src.count || 0) - 1);
+        if (src.count === 0) {
+          src.owner = 0;
+        }
+      }
+
+      if (mv.to === 0) {
+        preview.off[playerIdx] = (preview.off[playerIdx] || 0) + 1;
+        continue;
+      }
+
+      const dst = preview.points[mv.to];
+      if (preview.game_type === 1 && dst.owner === opp && dst.count === 1) {
+        preview.bar[oppIdx] = (preview.bar[oppIdx] || 0) + 1;
+        dst.owner = 0;
+        dst.count = 0;
+      }
+      dst.owner = player;
+      dst.count = (dst.count || 0) + 1;
+    }
+
+    return preview;
+  }
+
+  function currentBoardState() {
+    if (!state.game) {
+      return null;
+    }
+    if (state.click.path.length === 0) {
+      return state.game;
+    }
+    try {
+      return applyPreviewLine(state.game, state.click.path);
+    } catch (_) {
+      return state.game;
+    }
+  }
+
+  function rectCenterRect(rect, size = 34) {
+    if (!rect) {
+      return null;
+    }
+    const side = Math.min(size, rect.width, rect.height);
+    return {
+      left: rect.left + rect.width / 2 - side / 2,
+      top: rect.top + rect.height / 2 - side / 2,
+      width: side,
+      height: side,
+    };
+  }
+
+  function moveAnchorRect(pointIdx, player, toOff = false) {
+    if (pointIdx === 0) {
+      const selector = player === 1 ? ".barStack.bottom" : ".barStack.top";
+      const barStack = ui.board.querySelector(selector) || ui.board.querySelector(".barColumn");
+      return rectCenterRect(barStack ? barStack.getBoundingClientRect() : null);
+    }
+    if (toOff) {
+      return rectCenterRect(ui.offInfo.getBoundingClientRect());
+    }
+    const point = ui.board.querySelector(`.point[data-point="${pointIdx}"]`);
+    if (!point) {
+      return null;
+    }
+    return rectCenterRect(point.getBoundingClientRect());
+  }
+
+  function queueMoveAnimation(move, player = state.game ? state.game.turn : 0) {
+    if (!move || !player) {
+      return;
+    }
+    const colorClass = checkerColorClassForPlayer(player);
+    const startRect = moveAnchorRect(move.from, player, false);
+    if (!startRect || !colorClass) {
+      return;
+    }
+    state.animation.queue.push({
+      move,
+      colorClass,
+      player,
+      startRect: {
+        left: startRect.left,
+        top: startRect.top,
+        width: startRect.width,
+        height: startRect.height,
+      },
+    });
+  }
+
+  function queueLineAnimation(moves, player) {
+    if (!Array.isArray(moves) || moves.length === 0) {
+      return;
+    }
+    moves.forEach((move) => queueMoveAnimation(move, player));
+  }
+
+  function playPendingMoveAnimation() {
+    if (state.animation.playing || state.animation.queue.length === 0) {
+      return;
+    }
+    const pending = state.animation.queue.shift();
+    state.animation.playing = true;
+    const endRect = moveAnchorRect(pending.move.to, pending.player, pending.move.to === 0);
+    if (!endRect) {
+      state.animation.playing = false;
+      if (state.animation.queue.length > 0) {
+        window.setTimeout(playPendingMoveAnimation, 40);
+      }
+      return;
+    }
+
+    const ghost = document.createElement("div");
+    ghost.className = `checker checkerGhost ${pending.colorClass}`;
+    ghost.style.left = `${pending.startRect.left}px`;
+    ghost.style.top = `${pending.startRect.top}px`;
+    ghost.style.width = `${pending.startRect.width}px`;
+    ghost.style.height = `${pending.startRect.height}px`;
+    document.body.appendChild(ghost);
+
+    const dx = endRect.left - pending.startRect.left;
+    const dy = endRect.top - pending.startRect.top;
+    requestAnimationFrame(() => {
+      ghost.style.transform = `translate(${dx}px, ${dy}px)`;
+      ghost.style.opacity = "0.2";
+    });
+    window.setTimeout(() => {
+      ghost.remove();
+      state.animation.playing = false;
+      if (state.animation.queue.length > 0) {
+        window.setTimeout(playPendingMoveAnimation, 90);
+      }
+    }, 280);
+  }
+
+  function createPoint(boardState, pointIdx, rowType, colIndex) {
+    const pointState = boardState.points[pointIdx] || { owner: 0, count: 0 };
 
     const point = document.createElement("div");
     const tone = colIndex % 2 === 0 ? "tone-a" : "tone-b";
@@ -423,12 +709,12 @@
     return point;
   }
 
-  function createBar() {
+  function createBar(boardState) {
     const bar = document.createElement("div");
     bar.className = "barColumn";
 
-    const blackCount = (state.game.bar && state.game.bar[1]) || 0;
-    const whiteCount = (state.game.bar && state.game.bar[0]) || 0;
+    const blackCount = (boardState.bar && boardState.bar[1]) || 0;
+    const whiteCount = (boardState.bar && boardState.bar[0]) || 0;
 
     const topLabel = document.createElement("div");
     topLabel.className = "barLabel top";
@@ -484,31 +770,34 @@
 
   function renderBoard() {
     ui.board.innerHTML = "";
-    if (!state.game || !state.game.points) {
+    const boardState = currentBoardState();
+    if (!boardState || !boardState.points) {
       return;
     }
 
-    const bar = state.game.bar || [0, 0];
-    const off = state.game.off || [0, 0];
+    const bar = boardState.bar || [0, 0];
+    const off = boardState.off || [0, 0];
     ui.barInfo.textContent = t("stats.bar", { white: bar[0] || 0, black: bar[1] || 0 });
     ui.offInfo.textContent = t("stats.off", { white: off[0] || 0, black: off[1] || 0 });
     refreshOffTarget();
 
-    ui.board.appendChild(createBar());
+    ui.board.appendChild(createBar(boardState));
 
     topRow.forEach((pointIdx, colIdx) => {
       if (pointIdx == null) {
         return;
       }
-      ui.board.appendChild(createPoint(pointIdx, "top", colIdx));
+      ui.board.appendChild(createPoint(boardState, pointIdx, "top", colIdx));
     });
 
     bottomRow.forEach((pointIdx, colIdx) => {
       if (pointIdx == null) {
         return;
       }
-      ui.board.appendChild(createPoint(pointIdx, "bottom", colIdx));
+      ui.board.appendChild(createPoint(boardState, pointIdx, "bottom", colIdx));
     });
+
+    playPendingMoveAnimation();
   }
 
   function refreshOffTarget() {
@@ -625,10 +914,13 @@
     ui.startBtn.disabled = disabled;
     ui.applyBtn.disabled = disabled;
     ui.legalBtn.disabled = disabled;
-    ui.randomDiceBtn.disabled = disabled;
     ui.clearSelectionBtn.disabled = disabled;
     ui.undoBtn.disabled = disabled;
     ui.exportBtn.disabled = disabled;
+    if (ui.syncDiceBtn) {
+      ui.syncDiceBtn.disabled = disabled;
+    }
+    renderDiceTray();
     updateTurnGuide();
   }
 
@@ -699,6 +991,7 @@
   function updateSelectedPath() {
     if (state.click.path.length === 0) {
       ui.selectedPath.textContent = t("path.empty");
+      renderDiceTray();
       return;
     }
     let msg = t("path.current", { path: state.click.path.map((mv) => formatMove(mv)).join(" ") });
@@ -708,6 +1001,7 @@
       msg += ` ${t("path.variants", { count: state.click.candidates.length })}`;
     }
     ui.selectedPath.textContent = msg;
+    renderDiceTray();
   }
 
   async function onPointClick(pointIdx) {
@@ -769,6 +1063,7 @@
     }
 
     const chosenMove = state.legalLines[narrowed[0]].moves[step];
+    queueMoveAnimation(chosenMove);
     state.click.path.push(chosenMove);
     state.click.candidates = narrowed;
     state.click.selectedFrom = null;
@@ -798,6 +1093,14 @@
   }
 
   function handleApplyResponse(resp, d1, d2) {
+    const prevState = state.game ? cloneGameStateForPreview(state.game) : null;
+    if (prevState && resp && resp.decision && resp.decision.chosen_line && Array.isArray(resp.decision.chosen_line.moves)) {
+      queueLineAnimation(resp.decision.chosen_line.moves, prevState.turn);
+    }
+    if (prevState && state.click.path.length === 0 && resp && !resp.decision && resp.applied && Array.isArray(resp.applied.moves) && resp.applied.moves.length > 0) {
+      queueLineAnimation(resp.applied.moves, prevState.turn);
+    }
+
     state.game = resp.state;
     state.isBotTurn = !!resp.isBotTurn;
 
@@ -819,6 +1122,13 @@
         })
       );
       setStatus(t("status.autoBotMove"));
+      if (state.game && !state.isBotTurn && ui.autoHumanRoll && ui.autoHumanRoll.checked) {
+        window.setTimeout(() => {
+          if (state.game && !state.isBotTurn && !state.busy) {
+            randomDice();
+          }
+        }, 320);
+      }
       return;
     }
 
@@ -829,6 +1139,14 @@
     } else {
       pushLog(t("log.pass", { d1, d2 }));
       setStatus(t("status.autoNoMoves"));
+    }
+
+    if (state.game && state.isBotTurn) {
+      window.setTimeout(() => {
+        if (state.game && state.isBotTurn && !state.busy) {
+          randomDice();
+        }
+      }, 320);
     }
   }
 
@@ -854,6 +1172,7 @@
       resetClickSelection(false);
       renderTop3(null);
       renderAnalysis(null);
+      await setDiceValues(0, 0, false);
       refreshSnapshot();
       renderBoard();
       syncTurnStatus(resp);
@@ -865,6 +1184,13 @@
           think: req.thinkTime,
         })
       );
+      if (state.isBotTurn || (ui.autoHumanRoll && ui.autoHumanRoll.checked)) {
+        window.setTimeout(() => {
+          if (state.game && !state.busy && (state.isBotTurn || (ui.autoHumanRoll && ui.autoHumanRoll.checked))) {
+            randomDice();
+          }
+        }, 320);
+      }
     } catch (err) {
       setStatus(translateErrorMessage(String(err)), true);
     } finally {
@@ -1017,8 +1343,7 @@
     }
     const d1 = Math.floor(Math.random() * 6) + 1;
     const d2 = Math.floor(Math.random() * 6) + 1;
-    ui.d1.value = String(d1);
-    ui.d2.value = String(d2);
+    await setDiceValues(d1, d2, false);
 
     if (!state.game) {
       setStatus(t("status.randomReady", { d1, d2 }));
@@ -1069,6 +1394,27 @@
     }
   }
 
+  async function applyDiceText() {
+    const parsed = parseDiceText(ui.diceInput.value);
+    if (!parsed) {
+      setStatus(t("errors.dice"), true);
+      return;
+    }
+    const isBotTurnNow = !!state.isBotTurn;
+    await setDiceValues(parsed.d1, parsed.d2, !isBotTurnNow);
+    if (isBotTurnNow) {
+      await applyDice();
+    }
+  }
+
+  async function onDieButton() {
+    if (state.busy) {
+      setStatus(t("status.busy"));
+      return;
+    }
+    await randomDice();
+  }
+
   function clearSelection() {
     if (state.busy) {
       setStatus(t("status.busy"));
@@ -1108,6 +1454,8 @@
     if (state.busy) {
       return;
     }
+    syncDiceInputText();
+    renderDiceTray();
     const d1 = safeInt(ui.d1.value, 0);
     const d2 = safeInt(ui.d2.value, 0);
     if (d1 === state.click.d1 && d2 === state.click.d2) {
@@ -1173,6 +1521,8 @@
     renderLegalLines(state.legalLines);
     updateSelectedPath();
     renderBoard();
+    syncDiceInputText();
+    renderDiceTray();
     renderAnalysis(null);
 
     if (!state.game) {
@@ -1202,13 +1552,13 @@
   ui.startBtn.addEventListener("click", startGame);
   ui.applyBtn.addEventListener("click", applyDice);
   ui.legalBtn.addEventListener("click", loadLegal);
-  ui.randomDiceBtn.addEventListener("click", randomDice);
   ui.clearSelectionBtn.addEventListener("click", clearSelection);
   ui.undoBtn.addEventListener("click", undo);
   ui.exportBtn.addEventListener("click", exportState);
   ui.lineIndex.addEventListener("change", onLineSelected);
-  ui.d1.addEventListener("input", onDiceChanged);
-  ui.d2.addEventListener("input", onDiceChanged);
+  ui.syncDiceBtn.addEventListener("click", applyDiceText);
+  ui.diceInput.addEventListener("change", applyDiceText);
+  [ui.dieBtn1, ui.dieBtn2, ui.dieBtn3, ui.dieBtn4].forEach((btn) => btn.addEventListener("click", onDieButton));
   ui.langSelect.addEventListener("change", () => {
     state.lang = ui.langSelect.value === "en" ? "en" : "ru";
     applyLocale();

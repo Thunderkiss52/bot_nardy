@@ -22,6 +22,32 @@
       </label>
     </header>
 
+    <section class="panel turn">
+      <div class="turnHeader compact">
+        <h2 data-i18n="sections.turn">Ход</h2>
+        <div class="diceHint" data-i18n="labels.diceHint">Кости встроены в доску. Клик по ним бросает ход, ввод 4:2 находится рядом с доской.</div>
+      </div>
+      <input type="hidden" id="d1" />
+      <input type="hidden" id="d2" />
+      <div class="grid turnGrid">
+        <label>
+          <span data-i18n="labels.lineIndex">Линия (человек)</span>
+          <select id="lineIndex"></select>
+        </label>
+      </div>
+      <div class="row">
+        <button id="startBtn" data-i18n="buttons.newGame">Новая партия</button>
+        <button id="legalBtn" class="alt" data-i18n="buttons.showLegal">Показать легальные</button>
+        <button id="clearSelectionBtn" class="alt" data-i18n="buttons.clearSelection">Сброс выбора</button>
+        <button id="applyBtn" data-i18n="buttons.apply">Применить ход</button>
+        <button id="undoBtn" class="alt" data-i18n="buttons.undo">Отменить</button>
+        <button id="exportBtn" class="alt" data-i18n="buttons.export">Экспорт</button>
+      </div>
+      <div id="turnGuide" class="turnGuide">1) Новая партия 2) Клик по костям на доске 3) Клик по фишке и точке назначения.</div>
+      <div id="selectedPath" class="selectedPath">Выбор хода: пока пусто.</div>
+      <div id="status" class="status"></div>
+    </section>
+
     <section class="panel controls">
       <h2 data-i18n="sections.setup">Параметры партии</h2>
       <div class="grid setupGrid">
@@ -47,8 +73,8 @@
           </select>
         </label>
         <label>
-          <span data-i18n="labels.think">Время на ход (1-20)</span>
-          <input type="number" id="thinkTime" min="1" max="20" value="8" />
+          <span data-i18n="labels.think">Время на ход (1-5)</span>
+          <input type="number" id="thinkTime" min="1" max="5" value="5" />
         </label>
         <label>
           <span data-i18n="labels.seed">Seed</span>
@@ -56,52 +82,45 @@
         </label>
       </div>
       <div class="row">
-        <button id="startBtn" data-i18n="buttons.newGame">Новая партия</button>
         <label class="switchWrap">
           <input type="checkbox" id="showTop3" checked />
           <span data-i18n="labels.showTop3">Показывать Top-3</span>
         </label>
-      </div>
-    </section>
-
-    <section class="panel turn">
-      <h2 data-i18n="sections.turn">Ход</h2>
-      <div class="grid turnGrid">
-        <label>
-          <span>D1</span>
-          <input type="number" id="d1" min="1" max="6" />
-        </label>
-        <label>
-          <span>D2</span>
-          <input type="number" id="d2" min="1" max="6" />
-        </label>
-        <label>
-          <span data-i18n="labels.lineIndex">Линия (человек)</span>
-          <select id="lineIndex"></select>
+        <label class="switchWrap">
+          <input type="checkbox" id="autoHumanRoll" />
+          <span data-i18n="labels.autoHumanRoll">Автокубики игрока</span>
         </label>
       </div>
-      <div class="row">
-        <button id="randomDiceBtn" data-i18n="buttons.rollTurn">Бросить кубики и ходить</button>
-        <button id="legalBtn" class="alt" data-i18n="buttons.showLegal">Показать легальные</button>
-        <button id="clearSelectionBtn" class="alt" data-i18n="buttons.clearSelection">Сброс выбора</button>
-        <button id="applyBtn" data-i18n="buttons.apply">Применить ход</button>
-        <button id="undoBtn" class="alt" data-i18n="buttons.undo">Отменить</button>
-        <button id="exportBtn" class="alt" data-i18n="buttons.export">Экспорт</button>
-      </div>
-      <div id="turnGuide" class="turnGuide">1) Новая партия 2) Бросить кубики 3) Клик по фишке и точке назначения.</div>
-      <div id="selectedPath" class="selectedPath">Выбор хода: пока пусто.</div>
-      <div id="status" class="status"></div>
     </section>
 
     <section class="layout">
       <article class="panel boardPanel">
         <h2 data-i18n="sections.board">Доска</h2>
-        <p class="hint" data-i18n="hint.click">Для хода: нажми «Бросить кубики и ходить», затем кликай по подсвеченным фишкам и целям.</p>
-        <div class="boardStats">
-          <div id="barInfo" class="statBadge">Бар: Б 0 | Ч 0</div>
-          <div id="offInfo" class="statBadge">Вынос: Б 0 | Ч 0</div>
+        <p class="hint" data-i18n="hint.click">Для хода: кликни по костям на доске, затем кликай по подсвеченным фишкам и целям.</p>
+        <div class="boardTopBar">
+          <div class="diceManualRow boardManualRow">
+            <label class="diceManual">
+              <span data-i18n="labels.diceInput">Кубики / 4:2</span>
+              <input type="text" id="diceInput" placeholder="4:2" inputmode="numeric" />
+            </label>
+            <button id="syncDiceBtn" class="alt" data-i18n="buttons.syncDice">Бросить эти кости</button>
+          </div>
+          <div class="boardStats">
+            <div id="barInfo" class="statBadge">Бар: Б 0 | Ч 0</div>
+            <div id="offInfo" class="statBadge">Вынос: Б 0 | Ч 0</div>
+          </div>
         </div>
-        <div id="board" class="nardyBoard"></div>
+        <div class="boardStage">
+          <div class="diceDockWrap">
+            <div id="diceTray" class="diceTray boardDiceTray" aria-label="Dice tray">
+              <button id="dieBtn1" class="dieFace" type="button"></button>
+              <button id="dieBtn2" class="dieFace" type="button"></button>
+              <button id="dieBtn3" class="dieFace extra" type="button"></button>
+              <button id="dieBtn4" class="dieFace extra" type="button"></button>
+            </div>
+          </div>
+          <div id="board" class="nardyBoard"></div>
+        </div>
       </article>
 
       <article class="panel infoPanel">

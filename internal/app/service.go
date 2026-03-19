@@ -96,6 +96,10 @@ func NewService(logPath string) (*Service, error) {
 		weightsPath:    weightsPath,
 		modelsDir:      modelsDir,
 	}
+	if os.Getenv("BOT_NARDY_WEIGHTS_PATH") == "" {
+		weightsPath = bundledWeightsPath(weightsPath)
+		s.weightsPath = weightsPath
+	}
 	if logPath != "" {
 		l, err := logging.NewJSONLLogger(logPath)
 		if err != nil {
@@ -367,7 +371,7 @@ func (s *Service) SelfLearn(epochs int) (SelfLearnResult, error) {
 	weightsPath := s.weightsPath
 	modelsDir := s.modelsDir
 	seed := s.options.Seed
-	validationThinkSec := s.validationThinkTimeSecLocked()
+	validationThinkTime := s.validationThinkTimeLocked()
 	s.mu.Unlock()
 
 	s.trainingMu.Lock()
@@ -395,11 +399,16 @@ func (s *Service) SelfLearn(epochs int) (SelfLearnResult, error) {
 		return SelfLearnResult{}, err
 	}
 
-	validationGames := 12
+	validationGames := 4
 	if seed == 0 {
 		seed = time.Now().UnixNano()
 	}
-	winRate, err := s.evaluateChallenger(currentEval, challengerEval, validationThinkSec, seed+91_337, validationGames)
+	if result.ValidationExamples > 0 && result.ValidationAbsError > result.AvgAbsError*1.35 {
+		result.Accepted = false
+		_ = os.Remove(candidatePath)
+		return result, nil
+	}
+	winRate, err := s.evaluateChallenger(currentEval, challengerEval, validationThinkTime, seed+91_337, validationGames)
 	if err != nil {
 		_ = os.Remove(candidatePath)
 		return SelfLearnResult{}, err
@@ -424,7 +433,7 @@ func (s *Service) SelfLearn(epochs int) (SelfLearnResult, error) {
 	if _, err := os.Stat(weightsPath); err == nil {
 		currentPath = weightsPath
 	}
-	championPath, championName, championScore, leagueSize, err := s.selectChampionModel(currentPath, archivedCandidatePath, validationThinkSec, seed+177_013, 6)
+	championPath, championName, championScore, leagueSize, err := s.selectChampionModel(currentPath, archivedCandidatePath, validationThinkTime, seed+177_013, 6)
 	if err != nil {
 		return SelfLearnResult{}, err
 	}
@@ -618,6 +627,7 @@ func (s *Service) recordExampleLocked(before engine.GameState, d1, d2 int, legal
 		return
 	}
 	s.gameExamples = append(s.gameExamples, training.Example{
+		StateBefore:   before,
 		GameType:      before.GameType.String(),
 		StateKey:      before.NormalizeKey(),
 		Perspective:   before.Turn.String(),
@@ -811,6 +821,27 @@ func defaultTrainingPaths() (string, string, error) {
 	return filepath.Join(dir, "bot_nardy_training_examples.jsonl"), filepath.Join(dir, "bot_nardy_weights.json"), nil
 }
 
+func bundledWeightsPath(defaultPath string) string {
+	if _, err := os.Stat(defaultPath); err == nil {
+		return defaultPath
+	}
+	exePath, err := os.Executable()
+	if err != nil {
+		return defaultPath
+	}
+	bundledPath := filepath.Join(filepath.Dir(exePath), filepath.Base(defaultPath))
+	if bundledPath == defaultPath {
+		return defaultPath
+	}
+	if _, err := os.Stat(bundledPath); err != nil {
+		return defaultPath
+	}
+	if err := copyFile(bundledPath, defaultPath); err == nil {
+		return defaultPath
+	}
+	return bundledPath
+}
+
 func probabilityTarget(prob float64) float64 {
 	return clampFloat(2*prob-1, -1, 1)
 }
@@ -978,6 +1009,7 @@ func (s *Service) playSelfTrainingGame(gameType engine.GameType, thinkTime time.
 			return nil, err
 		}
 		examples = append(examples, training.Example{
+			StateBefore:   state,
 			GameType:      state.GameType.String(),
 			StateKey:      state.NormalizeKey(),
 			Perspective:   state.Turn.String(),
@@ -1020,12 +1052,12 @@ func (s *Service) playSelfTrainingGame(gameType engine.GameType, thinkTime time.
 	return examples, nil
 }
 
-func (s *Service) evaluateChallenger(current, challenger bot.Evaluator, thinkSec int, seed int64, games int) (float64, error) {
+func (s *Service) evaluateChallenger(current, challenger bot.Evaluator, thinkTime time.Duration, seed int64, games int) (float64, error) {
 	if games <= 0 {
 		games = 6
 	}
-	if thinkSec < 1 {
-		thinkSec = 1
+	if thinkTime <= 0 {
+		thinkTime = 250 * time.Millisecond
 	}
 
 	challengerWins := 0
@@ -1044,7 +1076,7 @@ func (s *Service) evaluateChallenger(current, challenger bot.Evaluator, thinkSec
 			blackEval = challenger
 		}
 
-		winner, err := s.playEvaluationGame(gameType, time.Duration(thinkSec)*time.Second, seed+int64(i)*4099, whiteEval, blackEval)
+		winner, err := s.playEvaluationGame(gameType, thinkTime, seed+int64(i)*4099, whiteEval, blackEval)
 		if err != nil {
 			return 0, err
 		}
@@ -1057,19 +1089,26 @@ func (s *Service) evaluateChallenger(current, challenger bot.Evaluator, thinkSec
 }
 
 func (s *Service) playEvaluationGame(gameType engine.GameType, thinkTime time.Duration, seed int64, whiteEval, blackEval bot.Evaluator) (engine.Color, error) {
+	if thinkTime <= 0 {
+		thinkTime = 10 * time.Millisecond
+	}
+	if thinkTime > 20*time.Millisecond {
+		thinkTime = 20 * time.Millisecond
+	}
+
 	whiteBot := bot.New(bot.Config{
 		ThinkTime: thinkTime,
-		TopK:      12,
+		TopK:      4,
 		Workers:   1,
-		MaxPlies:  640,
+		MaxPlies:  48,
 		Seed:      seed + 1,
 		Evaluator: whiteEval,
 	})
 	blackBot := bot.New(bot.Config{
 		ThinkTime: thinkTime,
-		TopK:      12,
+		TopK:      4,
 		Workers:   1,
-		MaxPlies:  640,
+		MaxPlies:  48,
 		Seed:      seed + 2,
 		Evaluator: blackEval,
 	})
@@ -1080,7 +1119,7 @@ func (s *Service) playEvaluationGame(gameType engine.GameType, thinkTime time.Du
 	}
 	rng := rand.New(rand.NewSource(seed + 17))
 
-	for ply := 0; ply < 2048; ply++ {
+	for ply := 0; ply < 128; ply++ {
 		if state.IsTerminal() {
 			return state.Winner(), nil
 		}
@@ -1118,7 +1157,7 @@ type modelEntry struct {
 	eval bot.Evaluator
 }
 
-func (s *Service) selectChampionModel(currentPath, challengerPath string, thinkSec int, seed int64, recentLimit int) (string, string, float64, int, error) {
+func (s *Service) selectChampionModel(currentPath, challengerPath string, thinkTime time.Duration, seed int64, recentLimit int) (string, string, float64, int, error) {
 	paths, err := s.modelLeaguePaths(currentPath, challengerPath, recentLimit)
 	if err != nil {
 		return "", "", 0, 0, err
@@ -1147,7 +1186,7 @@ func (s *Service) selectChampionModel(currentPath, challengerPath string, thinkS
 
 	for i := 0; i < len(models); i++ {
 		for j := i + 1; j < len(models); j++ {
-			scoreI, scoreJ, err := s.playModelPair(models[i], models[j], thinkSec, seed+int64(i*97+j*389))
+			scoreI, scoreJ, err := s.playModelPair(models[i], models[j], thinkTime, seed+int64(i*97+j*389))
 			if err != nil {
 				return "", "", 0, 0, err
 			}
@@ -1174,12 +1213,12 @@ func (s *Service) selectChampionModel(currentPath, challengerPath string, thinkS
 	return best.path, best.name, bestScore, len(models), nil
 }
 
-func (s *Service) playModelPair(a, b modelEntry, thinkSec int, seed int64) (float64, float64, error) {
-	whiteWinner, err := s.playEvaluationGame(engine.GameShort, time.Duration(thinkSec)*time.Second, seed+1, a.eval, b.eval)
+func (s *Service) playModelPair(a, b modelEntry, thinkTime time.Duration, seed int64) (float64, float64, error) {
+	whiteWinner, err := s.playEvaluationGame(engine.GameShort, thinkTime, seed+1, a.eval, b.eval)
 	if err != nil {
 		return 0, 0, err
 	}
-	blackWinner, err := s.playEvaluationGame(engine.GameLong, time.Duration(thinkSec)*time.Second, seed+2, b.eval, a.eval)
+	blackWinner, err := s.playEvaluationGame(engine.GameLong, thinkTime, seed+2, b.eval, a.eval)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -1237,15 +1276,16 @@ func (s *Service) backgroundThinkTimeSecLocked() int {
 	}
 }
 
-func (s *Service) validationThinkTimeSecLocked() int {
+func (s *Service) validationThinkTimeLocked() time.Duration {
 	thinkSec := s.backgroundThinkTimeSecLocked()
-	if thinkSec > 2 {
-		return 2
+	switch {
+	case thinkSec >= 5:
+		return 20 * time.Millisecond
+	case thinkSec >= 3:
+		return 15 * time.Millisecond
+	default:
+		return 10 * time.Millisecond
 	}
-	if thinkSec < 1 {
-		return 1
-	}
-	return thinkSec
 }
 
 func defaultModelRegistryDir(weightsPath string) (string, error) {

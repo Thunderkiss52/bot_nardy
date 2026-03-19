@@ -41,6 +41,10 @@ type BackgroundTrainingResponse struct {
 	Status app.BackgroundTrainingStatus `json:"status"`
 }
 
+type ImportLogResponse struct {
+	Result app.ImportLogResult `json:"result"`
+}
+
 func NewAPI(logPath string) (*API, error) {
 	svc, err := app.NewService(logPath)
 	if err != nil {
@@ -209,6 +213,14 @@ func (a *API) StopBackgroundTraining() (BackgroundTrainingResponse, error) {
 
 func (a *API) BackgroundTrainingStatus() BackgroundTrainingResponse {
 	return BackgroundTrainingResponse{Status: a.svc.BackgroundTrainingStatus()}
+}
+
+func (a *API) ImportMoveLog(path string) (ImportLogResponse, error) {
+	result, err := a.svc.ImportMoveLog(strings.TrimSpace(path))
+	if err != nil {
+		return ImportLogResponse{}, err
+	}
+	return ImportLogResponse{Result: result}, nil
 }
 
 func parseGameType(v string) engine.GameType {

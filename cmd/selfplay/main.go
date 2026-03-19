@@ -106,6 +106,7 @@ func playGame(state engine.GameState, strongColor engine.Color, strong, baseline
 			continue
 		}
 		examples = append(examples, training.Example{
+			StateBefore:   state,
 			GameType:      state.GameType.String(),
 			StateKey:      state.NormalizeKey(),
 			Perspective:   state.Turn.String(),
