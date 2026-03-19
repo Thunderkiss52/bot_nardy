@@ -183,6 +183,14 @@ func (a *API) Undo() (TurnResponse, error) {
 	return TurnResponse{State: state, IsBotTurn: a.svc.IsBotTurn()}, nil
 }
 
+func (a *API) SwapBotSide() (TurnResponse, error) {
+	state, _, err := a.svc.SwapBotSide()
+	if err != nil {
+		return TurnResponse{}, err
+	}
+	return TurnResponse{State: state, IsBotTurn: a.svc.IsBotTurn()}, nil
+}
+
 func (a *API) Export(path string) error {
 	path = strings.TrimSpace(path)
 	if path == "" {

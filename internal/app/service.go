@@ -180,6 +180,18 @@ func (s *Service) State() engine.GameState {
 	return s.state
 }
 
+func (s *Service) SwapBotSide() (engine.GameState, engine.Color, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.options.BotSide != engine.White && s.options.BotSide != engine.Black {
+		return engine.GameState{}, engine.NoColor, errors.New("game is not initialized")
+	}
+	s.options.BotSide = s.options.BotSide.Opponent()
+	s.lastSuggestion = nil
+	return s.state, s.options.BotSide, nil
+}
+
 func (s *Service) LegalLines(d1, d2 int) ([]engine.TurnLine, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

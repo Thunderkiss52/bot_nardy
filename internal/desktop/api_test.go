@@ -100,3 +100,30 @@ func TestBackgroundTrainingLifecycle(t *testing.T) {
 		t.Fatalf("expected stopped background training")
 	}
 }
+
+func TestSwapBotSideUpdatesBotTurn(t *testing.T) {
+	api, err := NewAPI("")
+	if err != nil {
+		t.Fatalf("new api: %v", err)
+	}
+	defer api.Close()
+
+	_, err = api.StartGame(StartRequest{
+		GameType:  "short",
+		BotSide:   "black",
+		Opponent:  "human",
+		ThinkTime: 1,
+		Seed:      11,
+	})
+	if err != nil {
+		t.Fatalf("start game: %v", err)
+	}
+
+	resp, err := api.SwapBotSide()
+	if err != nil {
+		t.Fatalf("swap bot side: %v", err)
+	}
+	if !resp.IsBotTurn {
+		t.Fatalf("expected bot turn after swapping bot to white")
+	}
+}

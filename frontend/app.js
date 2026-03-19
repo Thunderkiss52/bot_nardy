@@ -19,6 +19,7 @@
     lineIndex: document.getElementById("lineIndex"),
     langSelect: document.getElementById("langSelect"),
     startBtn: document.getElementById("startBtn"),
+    swapSideBtn: document.getElementById("swapSideBtn"),
     applyBtn: document.getElementById("applyBtn"),
     legalBtn: document.getElementById("legalBtn"),
     clearSelectionBtn: document.getElementById("clearSelectionBtn"),
@@ -48,7 +49,7 @@
       "labels.seed": "Seed",
       "labels.seedPlaceholder": "опционально",
       "labels.showTop3": "Показывать Top-3",
-      "labels.autoHumanRoll": "Автокубики игрока",
+      "labels.autoHumanRoll": "Автокубики",
       "labels.lineIndex": "Линия (человек)",
       "labels.diceInput": "Кубики / 4:2",
       "labels.diceHint": "Кости встроены в доску. Клик по ним бросает ход, ввод 4:2 находится рядом с доской.",
@@ -59,6 +60,7 @@
       "sections.log": "Лог ходов",
       "sections.analysis": "Анализ",
       "buttons.newGame": "Новая партия",
+      "buttons.swapSide": "Сменить сторону",
       "buttons.syncDice": "Бросить эти кости",
       "buttons.showLegal": "Показать легальные",
       "buttons.clearSelection": "Сброс выбора",
@@ -94,6 +96,7 @@
       "status.selectionCleared": "Выбор хода сброшен.",
       "status.lineSelected": "Линия #{index} собрана кликами. Можно применять ход.",
       "status.stepAccepted": "Добавлен шаг: {from}/{to}({die}).",
+      "status.stepRemoved": "Последний шаг снят. Можно выбрать другой.",
       "status.randomReady": "Кости на доске: {d1}-{d2}.",
       "status.diceChanged": "Кубики изменились. Проверьте легальные ходы заново.",
       "status.exported": "Экспортировано в {path}",
@@ -102,12 +105,14 @@
       "status.chooseLineAgain": "Выберите линию и нажмите «Применить ход» ещё раз.",
       "status.passApplied": "Ходов нет, выполнен пас.",
       "status.busy": "Подождите, выполняется ход...",
+      "status.sideSwapped": "Стороны поменялись. Бот теперь играет за {side}.",
       "status.autoHumanReady": "Ваш ход: выберите подсвеченную фишку, затем точку назначения.",
       "status.autoBotMove": "Ход бота выполнен автоматически.",
       "status.autoNoMoves": "По этим кубикам ходов нет, выполнен пас.",
       "status.autoApplied": "Ход применён автоматически.",
       "guide.idle": "1) Новая партия 2) Клик по костям на доске 3) Клик по фишке и точке назначения.",
       "guide.bot": "Сейчас ход бота: он сам бросит и сходит.",
+      "guide.botManual": "Сейчас ход бота: бросьте или введите кости, после этого бот сходит.",
       "guide.humanDice": "Ваш ход: кликните по костям на доске или введите 4:2.",
       "guide.humanMove": "Ваш ход: кликайте по подсвеченным точкам, затем ход применится.",
       "dice.roll": "бросок",
@@ -140,6 +145,7 @@
       "log.humanMove": "человек {d1}-{d2}: {line}",
       "log.pass": "человек {d1}-{d2}: пас",
       "log.undo": "отмена хода",
+      "log.swapSide": "смена стороны: бот теперь {side}",
       "log.export": "экспорт: {path}",
       "prompt.export": "Путь для экспорта состояния",
       "errors.wails": "Wails API недоступен. Соберите приложение с тегом '-tags wails'.",
@@ -164,7 +170,7 @@
       "labels.seed": "Seed",
       "labels.seedPlaceholder": "optional",
       "labels.showTop3": "Show Top-3",
-      "labels.autoHumanRoll": "Auto Human Dice",
+      "labels.autoHumanRoll": "Auto Dice",
       "labels.lineIndex": "Line (human)",
       "labels.diceInput": "Dice / 4:2",
       "labels.diceHint": "Dice are built into the board area. Click them to roll, or enter 4:2 beside the board.",
@@ -175,6 +181,7 @@
       "sections.log": "Move Log",
       "sections.analysis": "Analysis",
       "buttons.newGame": "New Game",
+      "buttons.swapSide": "Swap Side",
       "buttons.syncDice": "Roll These Dice",
       "buttons.showLegal": "Show Legal",
       "buttons.clearSelection": "Clear Selection",
@@ -210,6 +217,7 @@
       "status.selectionCleared": "Move selection cleared.",
       "status.lineSelected": "Line #{index} built by clicks. You can apply move now.",
       "status.stepAccepted": "Step added: {from}/{to}({die}).",
+      "status.stepRemoved": "Last step removed. You can choose another one.",
       "status.randomReady": "Board dice: {d1}-{d2}.",
       "status.diceChanged": "Dice changed. Re-check legal lines.",
       "status.exported": "Exported to {path}",
@@ -218,12 +226,14 @@
       "status.chooseLineAgain": "Choose a line and click Apply Move again.",
       "status.passApplied": "No legal moves, pass applied.",
       "status.busy": "Please wait, processing move...",
+      "status.sideSwapped": "Sides swapped. Bot now plays {side}.",
       "status.autoHumanReady": "Your turn: choose a highlighted checker, then a destination.",
       "status.autoBotMove": "Bot move applied automatically.",
       "status.autoNoMoves": "No moves for these dice, pass applied.",
       "status.autoApplied": "Move applied automatically.",
       "guide.idle": "1) New game 2) Click the board dice 3) Click checker and destination.",
       "guide.bot": "Bot turn now: it will roll and play automatically.",
+      "guide.botManual": "Bot turn now: roll or enter dice for the bot, then it will move.",
       "guide.humanDice": "Your turn: click the board dice or enter 4:2.",
       "guide.humanMove": "Your turn: click highlighted points; move will apply automatically.",
       "dice.roll": "roll",
@@ -256,6 +266,7 @@
       "log.humanMove": "human {d1}-{d2}: {line}",
       "log.pass": "human {d1}-{d2}: pass",
       "log.undo": "undo move",
+      "log.swapSide": "side swapped: bot is now {side}",
       "log.export": "export: {path}",
       "prompt.export": "Export path",
       "errors.wails": "Wails API unavailable. Build app with '-tags wails'.",
@@ -898,7 +909,7 @@
       return;
     }
     if (state.isBotTurn) {
-      ui.turnGuide.textContent = t("guide.bot");
+      ui.turnGuide.textContent = autoDiceEnabled() ? t("guide.bot") : t("guide.botManual");
       return;
     }
     if (state.legalLines.length > 0) {
@@ -912,6 +923,7 @@
     state.busy = nextBusy;
     const disabled = !!nextBusy;
     ui.startBtn.disabled = disabled;
+    ui.swapSideBtn.disabled = disabled;
     ui.applyBtn.disabled = disabled;
     ui.legalBtn.disabled = disabled;
     ui.clearSelectionBtn.disabled = disabled;
@@ -937,6 +949,10 @@
     recomputeSelectable();
     updateSelectedPath();
     updateTurnGuide();
+  }
+
+  function autoDiceEnabled() {
+    return !!(ui.autoHumanRoll && ui.autoHumanRoll.checked);
   }
 
   function prepareInteractiveLines(lines, d1, d2) {
@@ -988,6 +1004,44 @@
     }
   }
 
+  function rebuildCandidatesFromPath() {
+    const prefix = state.click.path;
+    state.click.candidates = state.legalLines
+      .map((_, idx) => idx)
+      .filter((idx) => {
+        const line = state.legalLines[idx];
+        if (!line || !Array.isArray(line.moves) || line.moves.length < prefix.length) {
+          return false;
+        }
+        for (let i = 0; i < prefix.length; i++) {
+          const want = prefix[i];
+          const got = line.moves[i];
+          if (!got || got.from !== want.from || got.to !== want.to || got.die !== want.die) {
+            return false;
+          }
+        }
+        return true;
+      });
+    if (state.click.candidates.length === 0) {
+      state.click.candidates = state.legalLines.map((_, i) => i);
+      state.click.path = [];
+    }
+  }
+
+  function popLastSelectedStep() {
+    if (state.click.path.length === 0) {
+      return false;
+    }
+    state.click.path.pop();
+    state.click.selectedFrom = null;
+    rebuildCandidatesFromPath();
+    recomputeSelectable();
+    updateSelectedPath();
+    renderBoard();
+    setStatus(t("status.stepRemoved"));
+    return true;
+  }
+
   function updateSelectedPath() {
     if (state.click.path.length === 0) {
       ui.selectedPath.textContent = t("path.empty");
@@ -1022,11 +1076,19 @@
       return;
     }
     if (isSelectionComplete()) {
+      if (pointIsInPath(pointIdx)) {
+        popLastSelectedStep();
+        return;
+      }
       setStatus(t("status.selectionLocked"));
       return;
     }
 
     if (state.click.selectedFrom == null) {
+      if (state.click.path.length > 0 && pointIsInPath(pointIdx)) {
+        popLastSelectedStep();
+        return;
+      }
       if (!state.click.selectableFrom.has(pointIdx)) {
         setStatus(t("status.pickHighlighted"), true);
         return;
@@ -1122,7 +1184,7 @@
         })
       );
       setStatus(t("status.autoBotMove"));
-      if (state.game && !state.isBotTurn && ui.autoHumanRoll && ui.autoHumanRoll.checked) {
+      if (state.game && !state.isBotTurn && autoDiceEnabled()) {
         window.setTimeout(() => {
           if (state.game && !state.isBotTurn && !state.busy) {
             randomDice();
@@ -1141,7 +1203,7 @@
       setStatus(t("status.autoNoMoves"));
     }
 
-    if (state.game && state.isBotTurn) {
+    if (state.game && state.isBotTurn && autoDiceEnabled()) {
       window.setTimeout(() => {
         if (state.game && state.isBotTurn && !state.busy) {
           randomDice();
@@ -1184,9 +1246,9 @@
           think: req.thinkTime,
         })
       );
-      if (state.isBotTurn || (ui.autoHumanRoll && ui.autoHumanRoll.checked)) {
+      if (autoDiceEnabled()) {
         window.setTimeout(() => {
-          if (state.game && !state.busy && (state.isBotTurn || (ui.autoHumanRoll && ui.autoHumanRoll.checked))) {
+          if (state.game && !state.busy && autoDiceEnabled()) {
             randomDice();
           }
         }, 320);
@@ -1310,6 +1372,36 @@
       renderAnalysis(null);
       syncTurnStatus(resp);
       pushLog(t("log.undo"));
+    } catch (err) {
+      setStatus(translateErrorMessage(String(err)), true);
+    } finally {
+      setBusy(false);
+      updateTurnGuide();
+    }
+  }
+
+  async function swapBotSide() {
+    if (state.busy) {
+      setStatus(t("status.busy"));
+      return;
+    }
+    setBusy(true);
+    try {
+      const resp = await call("SwapBotSide");
+      state.game = resp.state;
+      state.isBotTurn = !!resp.isBotTurn;
+      renderLegalLines([]);
+      resetClickSelection(false);
+      renderBoard();
+      refreshSnapshot();
+      renderTop3(null);
+      renderAnalysis(null);
+      syncTurnStatus(resp);
+      const botSide = ui.botSide.value === "white" ? "black" : "white";
+      ui.botSide.value = botSide;
+      const sideLabel = botSide === "white" ? t("side.white") : t("side.black");
+      setStatus(t("status.sideSwapped", { side: sideLabel }));
+      pushLog(t("log.swapSide", { side: sideLabel }));
     } catch (err) {
       setStatus(translateErrorMessage(String(err)), true);
     } finally {
@@ -1550,6 +1642,7 @@
   }
 
   ui.startBtn.addEventListener("click", startGame);
+  ui.swapSideBtn.addEventListener("click", swapBotSide);
   ui.applyBtn.addEventListener("click", applyDice);
   ui.legalBtn.addEventListener("click", loadLegal);
   ui.clearSelectionBtn.addEventListener("click", clearSelection);

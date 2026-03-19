@@ -30,4 +30,6 @@ export function StopBackgroundTraining():Promise<desktop.BackgroundTrainingRespo
 
 export function SuggestMove(arg1:number,arg2:number):Promise<bot.Decision>;
 
+export function SwapBotSide():Promise<desktop.TurnResponse>;
+
 export function Undo():Promise<desktop.TurnResponse>;

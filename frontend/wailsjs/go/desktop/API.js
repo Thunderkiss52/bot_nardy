@@ -54,6 +54,10 @@ export function SuggestMove(arg1, arg2) {
   return window['go']['desktop']['API']['SuggestMove'](arg1, arg2);
 }
 
+export function SwapBotSide() {
+  return window['go']['desktop']['API']['SwapBotSide']();
+}
+
 export function Undo() {
   return window['go']['desktop']['API']['Undo']();
 }

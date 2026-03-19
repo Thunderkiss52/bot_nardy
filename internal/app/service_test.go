@@ -68,3 +68,36 @@ func TestPassTurnIfNoLegal(t *testing.T) {
 		t.Fatalf("expected move number increment")
 	}
 }
+
+func TestSwapBotSideChangesTurnOwnership(t *testing.T) {
+	svc, err := NewService("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer svc.Close()
+
+	_, err = svc.Start(GameOptions{
+		GameType:     engine.GameShort,
+		BotSide:      engine.Black,
+		Opponent:     OpponentHuman,
+		ThinkTimeSec: 1,
+		Seed:         1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if svc.IsBotTurn() {
+		t.Fatal("white turn should start as human")
+	}
+
+	_, side, err := svc.SwapBotSide()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if side != engine.White {
+		t.Fatalf("expected bot side to become white, got %v", side)
+	}
+	if !svc.IsBotTurn() {
+		t.Fatal("white turn should belong to bot after swap")
+	}
+}
