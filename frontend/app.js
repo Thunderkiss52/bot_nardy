@@ -23,8 +23,12 @@
     applyBtn: document.getElementById("applyBtn"),
     legalBtn: document.getElementById("legalBtn"),
     clearSelectionBtn: document.getElementById("clearSelectionBtn"),
+    editBtn: document.getElementById("editBtn"),
     undoBtn: document.getElementById("undoBtn"),
     exportBtn: document.getElementById("exportBtn"),
+    selfLearnBtn: document.getElementById("selfLearnBtn"),
+    bgTrainingBtn: document.getElementById("bgTrainingBtn"),
+    trainingStatus: document.getElementById("trainingStatus"),
     turnGuide: document.getElementById("turnGuide"),
     status: document.getElementById("status"),
     selectedPath: document.getElementById("selectedPath"),
@@ -49,7 +53,7 @@
       "labels.seed": "Seed",
       "labels.seedPlaceholder": "опционально",
       "labels.showTop3": "Показывать Top-3",
-      "labels.autoHumanRoll": "Автокубики",
+      "labels.autoHumanRoll": "Автоигра ботов (только бот vs бот)",
       "labels.lineIndex": "Линия (человек)",
       "labels.diceInput": "Кубики / 4:2",
       "labels.diceHint": "Кости встроены в доску. Клик по ним бросает ход, ввод 4:2 находится рядом с доской.",
@@ -64,9 +68,13 @@
       "buttons.syncDice": "Бросить эти кости",
       "buttons.showLegal": "Показать легальные",
       "buttons.clearSelection": "Сброс выбора",
+      "buttons.editCheckers": "Изменить шашки",
       "buttons.apply": "Применить ход",
       "buttons.undo": "Отменить",
       "buttons.export": "Экспорт",
+      "buttons.selfLearn": "Самообучение",
+      "buttons.bgTrainingStart": "Фоновый self-play",
+      "buttons.bgTrainingStop": "Стоп self-play",
       "hint.click": "Для хода: кликни по костям на доске, затем кликай по подсвеченным фишкам и целям.",
       "options.short": "Короткие",
       "options.long": "Длинные",
@@ -81,6 +89,7 @@
       "common.noMoves": "Нет ходов",
       "common.noTop3": "Нет вариантов Top-3 для этого хода.",
       "common.noAnalysis": "Пока нет анализа.",
+      "common.trainingOff": "Фоновое обучение выключено.",
       "status.ready": "Готово. Начните новую партию.",
       "status.turn": "Ход: {side} ({actor})",
       "status.legalCount": "Легальных линий: {count}",
@@ -94,6 +103,14 @@
       "status.pickHighlighted": "Выберите подсвеченную исходную точку.",
       "status.badDestination": "Выберите подсвеченную точку назначения.",
       "status.selectionCleared": "Выбор хода сброшен.",
+      "status.editModeOn": "Режим исправления включён. Выберите шашку на доске.",
+      "status.editCancelled": "Режим исправления выключен.",
+      "status.editPickDestination": "Шашка {point} выбрана. Укажите новую позицию.",
+      "status.editDone": "Позиция исправлена: {from} -> {to}. Можно переставлять дальше.",
+      "status.editExitFirst": "Сначала выйдите из режима «Изменить шашки» этой же кнопкой.",
+      "status.editNeedChecker": "Для исправления сначала выберите шашку на доске.",
+      "status.editBadDestination": "Сюда нельзя переставить выбранную шашку.",
+      "status.editSourceOnly": "Исходную шашку для исправления можно взять только с доски.",
       "status.lineSelected": "Линия #{index} собрана кликами. Можно применять ход.",
       "status.stepAccepted": "Добавлен шаг: {from}/{to}({die}).",
       "status.stepRemoved": "Последний шаг снят. Можно выбрать другой.",
@@ -110,7 +127,11 @@
       "status.autoBotMove": "Ход бота выполнен автоматически.",
       "status.autoNoMoves": "По этим кубикам ходов нет, выполнен пас.",
       "status.autoApplied": "Ход применён автоматически.",
+      "status.selfLearnDone": "Самообучение завершено: примеров {examples}, эпох {epochs}, принято {accepted}.",
+      "status.bgStarted": "Фоновый self-play запущен.",
+      "status.bgStopped": "Фоновый self-play остановлен.",
       "guide.idle": "1) Новая партия 2) Клик по костям на доске 3) Клик по фишке и точке назначения.",
+      "guide.edit": "Режим исправления: выберите шашку на доске, затем точку, бар или вынос.",
       "guide.bot": "Сейчас ход бота: он сам бросит и сходит.",
       "guide.botManual": "Сейчас ход бота: бросьте или введите кости, после этого бот сходит.",
       "guide.humanDice": "Ваш ход: кликните по костям на доске или введите 4:2.",
@@ -120,6 +141,8 @@
       "dice.double": "дубль",
       "dice.empty": "жми",
       "path.empty": "Выбор хода: пока пусто.",
+      "path.editIdle": "Исправление позиции: выберите шашку на доске.",
+      "path.editSource": "Исправление позиции: {from} -> ?",
       "path.current": "Выбор хода: {path}",
       "path.ready": "Линия готова к применению.",
       "path.variants": "Осталось вариантов: {count}",
@@ -147,6 +170,7 @@
       "log.undo": "отмена хода",
       "log.swapSide": "смена стороны: бот теперь {side}",
       "log.export": "экспорт: {path}",
+      "log.editChecker": "исправление позиции: {from} -> {to}",
       "prompt.export": "Путь для экспорта состояния",
       "errors.wails": "Wails API недоступен. Соберите приложение с тегом '-tags wails'.",
       "errors.dice": "Кубики должны быть в диапазоне 1..6. Можно вводить 42, 4 2 или 4:2.",
@@ -157,6 +181,12 @@
       "errors.exportPath": "Путь экспорта пустой.",
       "errors.outOfRange": "Индекс линии вне диапазона.",
       "errors.illegalAnalysis": "Невозможно проанализировать нелегальный ход.",
+      "errors.training": "Обучение сейчас недоступно: {message}",
+      "errors.noTrainingData": "Пока нет данных для обучения. Сыграй несколько партий или включи фоновый self-play.",
+      "errors.editRange": "Точка редактирования вне диапазона.",
+      "errors.editSame": "Исходная и целевая точки совпадают.",
+      "errors.editEmpty": "В исходной точке нет шашки.",
+      "errors.editOpponent": "Нельзя поставить шашку на занятую точку соперника.",
       "errors.generic": "Ошибка: {message}",
     },
     en: {
@@ -170,7 +200,7 @@
       "labels.seed": "Seed",
       "labels.seedPlaceholder": "optional",
       "labels.showTop3": "Show Top-3",
-      "labels.autoHumanRoll": "Auto Dice",
+      "labels.autoHumanRoll": "Bot Auto-Play (bot vs bot only)",
       "labels.lineIndex": "Line (human)",
       "labels.diceInput": "Dice / 4:2",
       "labels.diceHint": "Dice are built into the board area. Click them to roll, or enter 4:2 beside the board.",
@@ -185,9 +215,13 @@
       "buttons.syncDice": "Roll These Dice",
       "buttons.showLegal": "Show Legal",
       "buttons.clearSelection": "Clear Selection",
+      "buttons.editCheckers": "Edit Checkers",
       "buttons.apply": "Apply Move",
       "buttons.undo": "Undo",
       "buttons.export": "Export",
+      "buttons.selfLearn": "Self-Learn",
+      "buttons.bgTrainingStart": "Background Self-Play",
+      "buttons.bgTrainingStop": "Stop Self-Play",
       "hint.click": "To move: click the board dice, then click highlighted checkers and targets.",
       "options.short": "Short",
       "options.long": "Long",
@@ -202,6 +236,7 @@
       "common.noMoves": "No moves",
       "common.noTop3": "No Top-3 variants for this turn.",
       "common.noAnalysis": "No analysis yet.",
+      "common.trainingOff": "Background training is off.",
       "status.ready": "Ready. Start a new game.",
       "status.turn": "Turn: {side} ({actor})",
       "status.legalCount": "Legal lines: {count}",
@@ -215,6 +250,14 @@
       "status.pickHighlighted": "Pick a highlighted source point.",
       "status.badDestination": "Pick a highlighted destination point.",
       "status.selectionCleared": "Move selection cleared.",
+      "status.editModeOn": "Board edit mode is on. Pick a checker on the board.",
+      "status.editCancelled": "Board edit mode is off.",
+      "status.editPickDestination": "Checker {point} selected. Choose a new destination.",
+      "status.editDone": "Board corrected: {from} -> {to}. You can keep editing.",
+      "status.editExitFirst": "Exit board edit mode with the same button first.",
+      "status.editNeedChecker": "Pick a checker on the board first.",
+      "status.editBadDestination": "That destination is not allowed for the selected checker.",
+      "status.editSourceOnly": "Edit mode can only start from a checker on the board.",
       "status.lineSelected": "Line #{index} built by clicks. You can apply move now.",
       "status.stepAccepted": "Step added: {from}/{to}({die}).",
       "status.stepRemoved": "Last step removed. You can choose another one.",
@@ -231,7 +274,11 @@
       "status.autoBotMove": "Bot move applied automatically.",
       "status.autoNoMoves": "No moves for these dice, pass applied.",
       "status.autoApplied": "Move applied automatically.",
+      "status.selfLearnDone": "Self-learning finished: examples {examples}, epochs {epochs}, accepted {accepted}.",
+      "status.bgStarted": "Background self-play started.",
+      "status.bgStopped": "Background self-play stopped.",
       "guide.idle": "1) New game 2) Click the board dice 3) Click checker and destination.",
+      "guide.edit": "Board edit mode: pick a checker, then a point, bar, or off.",
       "guide.bot": "Bot turn now: it will roll and play automatically.",
       "guide.botManual": "Bot turn now: roll or enter dice for the bot, then it will move.",
       "guide.humanDice": "Your turn: click the board dice or enter 4:2.",
@@ -241,6 +288,8 @@
       "dice.double": "double",
       "dice.empty": "tap",
       "path.empty": "Move selection: empty.",
+      "path.editIdle": "Board edit: pick a checker on the board.",
+      "path.editSource": "Board edit: {from} -> ?",
       "path.current": "Move selection: {path}",
       "path.ready": "Line is ready to apply.",
       "path.variants": "Remaining variants: {count}",
@@ -268,6 +317,7 @@
       "log.undo": "undo move",
       "log.swapSide": "side swapped: bot is now {side}",
       "log.export": "export: {path}",
+      "log.editChecker": "board edit: {from} -> {to}",
       "prompt.export": "Export path",
       "errors.wails": "Wails API unavailable. Build app with '-tags wails'.",
       "errors.dice": "Dice must be in range 1..6. You can enter 42, 4 2, or 4:2.",
@@ -278,6 +328,12 @@
       "errors.exportPath": "Export path is empty.",
       "errors.outOfRange": "Line index is out of range.",
       "errors.illegalAnalysis": "Cannot analyze an illegal line.",
+      "errors.training": "Training is unavailable right now: {message}",
+      "errors.noTrainingData": "No training data yet. Play a few games or enable background self-play first.",
+      "errors.editRange": "Edit point is out of range.",
+      "errors.editSame": "Source and destination are the same.",
+      "errors.editEmpty": "The source point is empty.",
+      "errors.editOpponent": "Cannot place a checker on an opponent point.",
       "errors.generic": "Error: {message}",
     },
   };
@@ -303,6 +359,15 @@
       queue: [],
       playing: false,
     },
+    training: {
+      running: false,
+      pollHandle: null,
+      status: null,
+    },
+    edit: {
+      enabled: false,
+      source: null,
+    },
   };
 
   const topRow = [13, 14, 15, 16, 17, 18, null, 19, 20, 21, 22, 23, 24];
@@ -324,6 +389,103 @@
       template = template.replaceAll(`{${name}}`, String(value));
     });
     return template;
+  }
+
+  function renderTrainingStatus() {
+    if (!ui.trainingStatus) {
+      return;
+    }
+    const status = state.training.status;
+    if (!status || !status.running) {
+      ui.trainingStatus.textContent = t("common.trainingOff");
+      if (ui.bgTrainingBtn) {
+        ui.bgTrainingBtn.textContent = t("buttons.bgTrainingStart");
+      }
+      return;
+    }
+    const parts = [
+      `self-play: games ${status.games || 0}`,
+      `examples ${status.examples || 0}`,
+      `workers ${status.workers || 0}`,
+    ];
+    if (status.last_error) {
+      parts.push(`error ${status.last_error}`);
+    }
+    ui.trainingStatus.textContent = parts.join(" | ");
+    if (ui.bgTrainingBtn) {
+      ui.bgTrainingBtn.textContent = t("buttons.bgTrainingStop");
+    }
+  }
+
+  function stopTrainingPoll() {
+    if (state.training.pollHandle) {
+      window.clearTimeout(state.training.pollHandle);
+      state.training.pollHandle = null;
+    }
+  }
+
+  function applyBackgroundTrainingStatus(status) {
+    state.training.status = status || null;
+    state.training.running = !!(status && status.running);
+    renderTrainingStatus();
+    stopTrainingPoll();
+    if (state.training.running) {
+      state.training.pollHandle = window.setTimeout(refreshBackgroundTrainingStatus, 3000);
+    }
+  }
+
+  async function refreshBackgroundTrainingStatus() {
+    try {
+      const resp = await call("BackgroundTrainingStatus");
+      applyBackgroundTrainingStatus(resp && resp.status ? resp.status : null);
+    } catch (_) {
+      stopTrainingPoll();
+    }
+  }
+
+  async function selfLearn() {
+    if (state.busy) {
+      setStatus(t("status.busy"));
+      return;
+    }
+    setBusy(true);
+    try {
+      const resp = await call("SelfLearn", 12);
+      const result = resp && resp.result ? resp.result : null;
+      if (!result) {
+        throw new Error("empty self-learn result");
+      }
+      const accepted = result.accepted ? "yes" : "no";
+      setStatus(t("status.selfLearnDone", { examples: result.examples || 0, epochs: result.epochs || 0, accepted }));
+      pushLog(`self-learn: examples=${result.examples || 0}, accepted=${accepted}, model=${result.model_name || "n/a"}`);
+      await refreshBackgroundTrainingStatus();
+    } catch (err) {
+      const message = String(err || "");
+      if (message.toLowerCase().includes("no training examples found")) {
+        setStatus(t("errors.noTrainingData"), true);
+      } else {
+        setStatus(t("errors.training", { message }), true);
+      }
+    } finally {
+      setBusy(false);
+      updateTurnGuide();
+    }
+  }
+
+  async function toggleBackgroundTraining() {
+    if (state.busy) {
+      setStatus(t("status.busy"));
+      return;
+    }
+    try {
+      const method = state.training.running ? "StopBackgroundTraining" : "StartBackgroundTraining";
+      const resp = await call(method);
+      applyBackgroundTrainingStatus(resp && resp.status ? resp.status : null);
+      setStatus(state.training.running ? t("status.bgStarted") : t("status.bgStopped"));
+      pushLog(state.training.running ? "background self-play: started" : "background self-play: stopped");
+    } catch (err) {
+      setStatus(t("errors.training", { message: String(err) }), true);
+    }
   }
 
   function safeInt(value, fallback) {
@@ -680,7 +842,18 @@
     point.style.gridRow = rowType === "top" ? "1" : "2";
     point.dataset.point = String(pointIdx);
 
-    if (!state.isBotTurn && state.legalLines.length > 0) {
+    if (state.edit.enabled) {
+      point.classList.add("interactive");
+      if (canSelectEditSource(pointIdx)) {
+        point.classList.add("fromOption");
+      }
+      if (canSelectEditDestination(pointIdx)) {
+        point.classList.add("toOption");
+      }
+      if (state.edit.source && state.edit.source.from === pointIdx) {
+        point.classList.add("selectedFrom");
+      }
+    } else if (!state.isBotTurn && state.legalLines.length > 0) {
       point.classList.add("interactive");
       if (state.click.selectableFrom.has(pointIdx)) {
         point.classList.add("fromOption");
@@ -702,6 +875,10 @@
     }
 
     point.addEventListener("click", () => onPointClick(pointIdx));
+    point.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      onBoardSecondaryAction();
+    });
 
     const tri = document.createElement("div");
     tri.className = "triangle";
@@ -747,6 +924,18 @@
     drawStack(bottomStack, "white", whiteCount, "bottom", 8);
     bar.appendChild(bottomStack);
 
+    if (state.edit.enabled) {
+      if (canSelectEditDestination(-1)) {
+        bar.classList.add("interactive", "toOption");
+      }
+      bar.addEventListener("click", () => onEditTargetClick(-1));
+      bar.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        onBoardSecondaryAction();
+      });
+      return bar;
+    }
+
     if (!state.isBotTurn && state.legalLines.length > 0) {
       bar.classList.add("interactive");
       if (state.click.selectableFrom.has(0)) {
@@ -757,6 +946,10 @@
       }
     }
     bar.addEventListener("click", () => onPointClick(0));
+    bar.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      onBoardSecondaryAction();
+    });
 
     return bar;
   }
@@ -814,6 +1007,17 @@
   function refreshOffTarget() {
     ui.offInfo.classList.remove("interactive", "toOption");
     ui.offInfo.onclick = null;
+    ui.offInfo.oncontextmenu = (event) => {
+      event.preventDefault();
+      onBoardSecondaryAction();
+    };
+    if (state.edit.enabled) {
+      if (canSelectEditDestination(0)) {
+        ui.offInfo.classList.add("interactive", "toOption");
+        ui.offInfo.onclick = () => onEditTargetClick(0);
+      }
+      return;
+    }
     if (!state.isBotTurn && state.legalLines.length > 0 && state.click.selectableTo.has(0)) {
       ui.offInfo.classList.add("interactive", "toOption");
       ui.offInfo.onclick = () => onPointClick(0);
@@ -908,8 +1112,12 @@
       ui.turnGuide.textContent = t("status.busy");
       return;
     }
+    if (state.edit.enabled) {
+      ui.turnGuide.textContent = t("guide.edit");
+      return;
+    }
     if (state.isBotTurn) {
-      ui.turnGuide.textContent = autoDiceEnabled() ? t("guide.bot") : t("guide.botManual");
+      ui.turnGuide.textContent = botAutoPlayEnabled() ? t("guide.bot") : t("guide.botManual");
       return;
     }
     if (state.legalLines.length > 0) {
@@ -927,8 +1135,17 @@
     ui.applyBtn.disabled = disabled;
     ui.legalBtn.disabled = disabled;
     ui.clearSelectionBtn.disabled = disabled;
+    if (ui.editBtn) {
+      ui.editBtn.disabled = disabled;
+    }
     ui.undoBtn.disabled = disabled;
     ui.exportBtn.disabled = disabled;
+    if (ui.selfLearnBtn) {
+      ui.selfLearnBtn.disabled = disabled;
+    }
+    if (ui.bgTrainingBtn) {
+      ui.bgTrainingBtn.disabled = disabled;
+    }
     if (ui.syncDiceBtn) {
       ui.syncDiceBtn.disabled = disabled;
     }
@@ -951,8 +1168,41 @@
     updateTurnGuide();
   }
 
+  function refreshAutoPlayAvailability() {
+    if (!ui.autoHumanRoll || !ui.opponent) {
+      return;
+    }
+    const enabled = ui.opponent.value === "bot";
+    ui.autoHumanRoll.disabled = !enabled;
+    if (!enabled) {
+      ui.autoHumanRoll.checked = false;
+    }
+  }
+
   function autoDiceEnabled() {
     return !!(ui.autoHumanRoll && ui.autoHumanRoll.checked);
+  }
+
+  function botAutoPlayEnabled() {
+    return autoDiceEnabled() && ui.opponent && ui.opponent.value === "bot";
+  }
+
+  function isTerminalGame(game) {
+    if (!game || !Array.isArray(game.off)) {
+      return false;
+    }
+    return Number(game.off[0] || 0) >= 15 || Number(game.off[1] || 0) >= 15;
+  }
+
+  function scheduleAutoDiceNext(delay = 320) {
+    if (!botAutoPlayEnabled() || !state.game || isTerminalGame(state.game)) {
+      return;
+    }
+    window.setTimeout(() => {
+      if (!state.busy && state.game && botAutoPlayEnabled() && !isTerminalGame(state.game)) {
+        randomDice();
+      }
+    }, delay);
   }
 
   function prepareInteractiveLines(lines, d1, d2) {
@@ -1043,6 +1293,15 @@
   }
 
   function updateSelectedPath() {
+    if (state.edit.enabled) {
+      if (!state.edit.source) {
+        ui.selectedPath.textContent = t("path.editIdle");
+      } else {
+        ui.selectedPath.textContent = t("path.editSource", { from: formatPoint(state.edit.source.from) });
+      }
+      renderDiceTray();
+      return;
+    }
     if (state.click.path.length === 0) {
       ui.selectedPath.textContent = t("path.empty");
       renderDiceTray();
@@ -1058,7 +1317,191 @@
     renderDiceTray();
   }
 
+  function renderEditModeState() {
+    if (!ui.editBtn) {
+      return;
+    }
+    ui.editBtn.classList.toggle("active", !!state.edit.enabled);
+  }
+
+  function resetEditSelection() {
+    state.edit.source = null;
+    updateSelectedPath();
+  }
+
+  function exitEditMode() {
+    if (!state.edit.enabled && !state.edit.source) {
+      return;
+    }
+    state.edit.enabled = false;
+    resetEditSelection();
+    renderEditModeState();
+  }
+
+  function requireEditModeOff() {
+    if (!state.edit.enabled) {
+      return false;
+    }
+    setStatus(t("status.editExitFirst"), true);
+    return true;
+  }
+
+  function canSelectEditSource(pointIdx) {
+    if (!state.edit.enabled || !state.game || pointIdx < 1 || pointIdx > 24) {
+      return false;
+    }
+    const point = state.game.points[pointIdx];
+    return !!(point && point.count > 0 && point.owner !== 0);
+  }
+
+  function canSelectEditDestination(pointIdx) {
+    if (!state.edit.enabled || !state.edit.source || !state.game) {
+      return false;
+    }
+    if (pointIdx === state.edit.source.from) {
+      return false;
+    }
+    if (pointIdx === 0) {
+      return true;
+    }
+    if (pointIdx === -1) {
+      return state.game.game_type === 1;
+    }
+    if (pointIdx < 1 || pointIdx > 24) {
+      return false;
+    }
+    const point = state.game.points[pointIdx] || { owner: 0, count: 0 };
+    return point.owner === 0 || point.owner === state.edit.source.color;
+  }
+
+  async function applyEditChecker(targetIdx) {
+    const source = state.edit.source;
+    if (!source) {
+      setStatus(t("status.editNeedChecker"), true);
+      return;
+    }
+    setBusy(true);
+    try {
+      const resp = await call("EditChecker", { from: source.from, to: targetIdx, color: source.color === 1 ? "white" : "black" });
+      state.game = resp.state;
+      state.isBotTurn = !!resp.isBotTurn;
+      renderLegalLines([]);
+      resetClickSelection(true);
+      resetEditSelection();
+      renderBoard();
+      refreshSnapshot();
+      renderTop3(null);
+      renderAnalysis(null);
+      renderEditModeState();
+      setStatus(t("status.editDone", { from: formatPoint(source.from), to: formatPoint(targetIdx) }));
+      pushLog(t("log.editChecker", { from: formatPoint(source.from), to: formatPoint(targetIdx) }));
+    } catch (err) {
+      setStatus(translateErrorMessage(String(err)), true);
+    } finally {
+      setBusy(false);
+      updateTurnGuide();
+    }
+  }
+
+  async function onEditTargetClick(targetIdx) {
+    if (!state.game) {
+      setStatus(t("status.noGame"), true);
+      return;
+    }
+    if (!state.edit.source) {
+      setStatus(t("status.editNeedChecker"), true);
+      return;
+    }
+    if (!canSelectEditDestination(targetIdx)) {
+      setStatus(t("status.editBadDestination"), true);
+      return;
+    }
+    await applyEditChecker(targetIdx);
+  }
+
+  async function toggleEditMode() {
+    if (state.busy) {
+      setStatus(t("status.busy"));
+      return;
+    }
+    if (!state.game) {
+      setStatus(t("status.noGame"), true);
+      return;
+    }
+    state.edit.enabled = !state.edit.enabled;
+    resetEditSelection();
+    renderLegalLines([]);
+    resetClickSelection(true);
+    renderTop3(null);
+    renderAnalysis(null);
+    renderBoard();
+    renderEditModeState();
+    setStatus(t(state.edit.enabled ? "status.editModeOn" : "status.editCancelled"));
+    updateTurnGuide();
+  }
+
+
+  async function onBoardSecondaryAction() {
+    if (state.busy) {
+      setStatus(t("status.busy"));
+      return;
+    }
+    if (state.edit.enabled) {
+      if (state.edit.source) {
+        resetEditSelection();
+        renderBoard();
+        setStatus(t("status.editModeOn"));
+      }
+      return;
+    }
+    if (popLastSelectedStep()) {
+      return;
+    }
+    await undo();
+  }
+
   async function onPointClick(pointIdx) {
+    if (state.edit.enabled) {
+      if (!state.game) {
+        setStatus(t("status.noGame"), true);
+        return;
+      }
+      if (state.busy) {
+        setStatus(t("status.busy"));
+        return;
+      }
+      if (pointIdx < 1 || pointIdx > 24) {
+        setStatus(t("status.editSourceOnly"), true);
+        return;
+      }
+      if (!state.edit.source) {
+        if (!canSelectEditSource(pointIdx)) {
+          setStatus(t("status.editNeedChecker"), true);
+          return;
+        }
+        const point = state.game.points[pointIdx];
+        state.edit.source = { from: pointIdx, color: point.owner };
+        updateSelectedPath();
+        renderBoard();
+        setStatus(t("status.editPickDestination", { point: formatPoint(pointIdx) }));
+        updateTurnGuide();
+        return;
+      }
+      if (pointIdx === state.edit.source.from) {
+        resetEditSelection();
+        renderBoard();
+        setStatus(t("status.editModeOn"));
+        updateTurnGuide();
+        return;
+      }
+      if (!canSelectEditDestination(pointIdx)) {
+        setStatus(t("status.editBadDestination"), true);
+        return;
+      }
+      await applyEditChecker(pointIdx);
+      return;
+    }
+
     if (!state.game) {
       setStatus(t("status.noGame"), true);
       return;
@@ -1076,19 +1519,11 @@
       return;
     }
     if (isSelectionComplete()) {
-      if (pointIsInPath(pointIdx)) {
-        popLastSelectedStep();
-        return;
-      }
       setStatus(t("status.selectionLocked"));
       return;
     }
 
     if (state.click.selectedFrom == null) {
-      if (state.click.path.length > 0 && pointIsInPath(pointIdx)) {
-        popLastSelectedStep();
-        return;
-      }
       if (!state.click.selectableFrom.has(pointIdx)) {
         setStatus(t("status.pickHighlighted"), true);
         return;
@@ -1155,6 +1590,7 @@
   }
 
   function handleApplyResponse(resp, d1, d2) {
+    exitEditMode();
     const prevState = state.game ? cloneGameStateForPreview(state.game) : null;
     if (prevState && resp && resp.decision && resp.decision.chosen_line && Array.isArray(resp.decision.chosen_line.moves)) {
       queueLineAnimation(resp.decision.chosen_line.moves, prevState.turn);
@@ -1184,13 +1620,7 @@
         })
       );
       setStatus(t("status.autoBotMove"));
-      if (state.game && !state.isBotTurn && autoDiceEnabled()) {
-        window.setTimeout(() => {
-          if (state.game && !state.isBotTurn && !state.busy) {
-            randomDice();
-          }
-        }, 320);
-      }
+      scheduleAutoDiceNext();
       return;
     }
 
@@ -1203,13 +1633,7 @@
       setStatus(t("status.autoNoMoves"));
     }
 
-    if (state.game && state.isBotTurn && autoDiceEnabled()) {
-      window.setTimeout(() => {
-        if (state.game && state.isBotTurn && !state.busy) {
-          randomDice();
-        }
-      }, 320);
-    }
+    scheduleAutoDiceNext();
   }
 
   async function startGame() {
@@ -1228,6 +1652,7 @@
         logPath: "moves.jsonl",
       };
       const resp = await call("StartGame", req);
+      exitEditMode();
       state.game = resp.state;
       state.isBotTurn = !!resp.isBotTurn;
       renderLegalLines([]);
@@ -1246,12 +1671,8 @@
           think: req.thinkTime,
         })
       );
-      if (autoDiceEnabled()) {
-        window.setTimeout(() => {
-          if (state.game && !state.busy && autoDiceEnabled()) {
-            randomDice();
-          }
-        }, 320);
+      if (botAutoPlayEnabled()) {
+        scheduleAutoDiceNext();
       }
     } catch (err) {
       setStatus(translateErrorMessage(String(err)), true);
@@ -1262,6 +1683,9 @@
   }
 
   async function loadLegal() {
+    if (requireEditModeOff()) {
+      return;
+    }
     if (state.busy) {
       setStatus(t("status.busy"));
       return;
@@ -1296,6 +1720,9 @@
   }
 
   async function applyDice(autoTriggered = false) {
+    if (requireEditModeOff()) {
+      return;
+    }
     if (state.busy) {
       setStatus(t("status.busy"));
       return;
@@ -1387,6 +1814,9 @@
     }
     setBusy(true);
     try {
+      if (requireEditModeOff()) {
+        return;
+      }
       const resp = await call("SwapBotSide");
       state.game = resp.state;
       state.isBotTurn = !!resp.isBotTurn;
@@ -1429,6 +1859,9 @@
   }
 
   async function randomDice() {
+    if (requireEditModeOff()) {
+      return;
+    }
     if (state.busy) {
       setStatus(t("status.busy"));
       return;
@@ -1487,6 +1920,9 @@
   }
 
   async function applyDiceText() {
+    if (requireEditModeOff()) {
+      return;
+    }
     const parsed = parseDiceText(ui.diceInput.value);
     if (!parsed) {
       setStatus(t("errors.dice"), true);
@@ -1512,6 +1948,13 @@
       setStatus(t("status.busy"));
       return;
     }
+    if (state.edit.enabled) {
+      resetEditSelection();
+      renderBoard();
+      setStatus(t("status.editModeOn"));
+      updateTurnGuide();
+      return;
+    }
     resetClickSelection(true);
     renderBoard();
     setStatus(t("status.selectionCleared"));
@@ -1520,6 +1963,9 @@
 
   function onLineSelected() {
     if (state.busy) {
+      return;
+    }
+    if (requireEditModeOff()) {
       return;
     }
     const idx = safeInt(ui.lineIndex.value, -1);
@@ -1540,6 +1986,11 @@
   }
 
   async function onDiceChanged() {
+    if (state.edit.enabled) {
+      syncDiceInputText();
+      renderDiceTray();
+      return;
+    }
     if (!state.game) {
       return;
     }
@@ -1609,6 +2060,7 @@
     setSelectText(ui.gameType, { short: t("options.short"), long: t("options.long") });
     setSelectText(ui.botSide, { white: t("options.white"), black: t("options.black") });
     setSelectText(ui.opponent, { human: t("options.human"), bot: t("options.bot") });
+    refreshAutoPlayAvailability();
 
     renderLegalLines(state.legalLines);
     updateSelectedPath();
@@ -1616,6 +2068,8 @@
     syncDiceInputText();
     renderDiceTray();
     renderAnalysis(null);
+    renderTrainingStatus();
+    renderEditModeState();
 
     if (!state.game) {
       setStatus(t("status.ready"));
@@ -1638,6 +2092,12 @@
     if (m.includes("export path is empty")) return t("errors.exportPath");
     if (m.includes("line index out of range")) return t("errors.outOfRange");
     if (m.includes("illegal line for analysis")) return t("errors.illegalAnalysis");
+    if (m.includes("edit point is out of range")) return t("errors.editRange");
+    if (m.includes("source and destination are the same")) return t("errors.editSame");
+    if (m.includes("source point is empty") || m.includes("borne-off source is empty") || m.includes("bar source is empty")) return t("errors.editEmpty");
+    if (m.includes("destination point belongs to the opponent")) return t("errors.editOpponent");
+    if (m.includes("no training examples found")) return t("errors.noTrainingData");
+    if (m.includes("training") || m.includes("selflearn") || m.includes("self-learning")) return t("errors.training", { message: msg });
     return t("errors.generic", { message: msg });
   }
 
@@ -1646,12 +2106,30 @@
   ui.applyBtn.addEventListener("click", applyDice);
   ui.legalBtn.addEventListener("click", loadLegal);
   ui.clearSelectionBtn.addEventListener("click", clearSelection);
+  if (ui.editBtn) {
+    ui.editBtn.addEventListener("click", toggleEditMode);
+  }
   ui.undoBtn.addEventListener("click", undo);
   ui.exportBtn.addEventListener("click", exportState);
+  if (ui.selfLearnBtn) {
+    ui.selfLearnBtn.addEventListener("click", selfLearn);
+  }
+  if (ui.bgTrainingBtn) {
+    ui.bgTrainingBtn.addEventListener("click", toggleBackgroundTraining);
+  }
   ui.lineIndex.addEventListener("change", onLineSelected);
   ui.syncDiceBtn.addEventListener("click", applyDiceText);
   ui.diceInput.addEventListener("change", applyDiceText);
   [ui.dieBtn1, ui.dieBtn2, ui.dieBtn3, ui.dieBtn4].forEach((btn) => btn.addEventListener("click", onDieButton));
+  ui.opponent.addEventListener("change", () => {
+    refreshAutoPlayAvailability();
+  });
+  ui.autoHumanRoll.addEventListener("change", () => {
+    if (botAutoPlayEnabled() && state.game && !state.busy && !isTerminalGame(state.game)) {
+      scheduleAutoDiceNext(80);
+    }
+    updateTurnGuide();
+  });
   ui.langSelect.addEventListener("change", () => {
     state.lang = ui.langSelect.value === "en" ? "en" : "ru";
     applyLocale();
@@ -1659,4 +2137,6 @@
 
   ui.langSelect.value = state.lang;
   applyLocale();
+  renderTrainingStatus();
+  refreshBackgroundTrainingStatus();
 })();

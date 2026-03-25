@@ -211,6 +211,22 @@ export namespace desktop {
 		    return a;
 		}
 	}
+	export class EditCheckerRequest {
+	    from: number;
+	    to: number;
+	    color?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new EditCheckerRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.from = source["from"];
+	        this.to = source["to"];
+	        this.color = source["color"];
+	    }
+	}
 	export class ImportLogResponse {
 	    result: app.ImportLogResult;
 	

@@ -576,6 +576,100 @@ func (s *Service) Undo() (engine.GameState, error) {
 	return s.state, nil
 }
 
+func (s *Service) EditChecker(from, to int, sourceColor engine.Color) (engine.GameState, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.state.GameType != engine.GameShort && s.state.GameType != engine.GameLong {
+		return engine.GameState{}, errors.New("game is not initialized")
+	}
+	if from < -1 || from > 24 || to < -1 || to > 24 {
+		return engine.GameState{}, errors.New("edit point is out of range")
+	}
+	if from == to {
+		return engine.GameState{}, errors.New("source and destination are the same")
+	}
+
+	next := s.state.Clone()
+	mover, err := removeEditedChecker(&next, from, sourceColor)
+	if err != nil {
+		return engine.GameState{}, err
+	}
+	if err := placeEditedChecker(&next, to, mover); err != nil {
+		return engine.GameState{}, err
+	}
+	if err := next.Validate(); err != nil {
+		return engine.GameState{}, err
+	}
+
+	s.state = next
+	s.history = append(s.history, next)
+	s.lastSuggestion = nil
+	s.gameExamples = nil
+	return s.state, nil
+}
+
+func removeEditedChecker(state *engine.GameState, from int, sourceColor engine.Color) (engine.Color, error) {
+	switch {
+	case from >= 1:
+		src := state.Points[from]
+		if src.Count <= 0 || src.Owner == engine.NoColor {
+			return engine.NoColor, errors.New("source point is empty")
+		}
+		src.Count--
+		mover := src.Owner
+		if src.Count == 0 {
+			src.Owner = engine.NoColor
+		}
+		state.Points[from] = src
+		return mover, nil
+	case from == 0:
+		if sourceColor != engine.White && sourceColor != engine.Black {
+			return engine.NoColor, errors.New("source color is required for borne-off checkers")
+		}
+		idx := sourceColor.Idx()
+		if state.Off[idx] <= 0 {
+			return engine.NoColor, errors.New("borne-off source is empty")
+		}
+		state.Off[idx]--
+		return sourceColor, nil
+	case from == -1:
+		if sourceColor != engine.White && sourceColor != engine.Black {
+			return engine.NoColor, errors.New("source color is required for bar checkers")
+		}
+		idx := sourceColor.Idx()
+		if state.Bar[idx] <= 0 {
+			return engine.NoColor, errors.New("bar source is empty")
+		}
+		state.Bar[idx]--
+		return sourceColor, nil
+	default:
+		return engine.NoColor, errors.New("source point is out of range")
+	}
+}
+
+func placeEditedChecker(state *engine.GameState, to int, mover engine.Color) error {
+	switch {
+	case to >= 1:
+		dst := state.Points[to]
+		if dst.Count > 0 && dst.Owner != mover {
+			return errors.New("destination point belongs to the opponent")
+		}
+		dst.Owner = mover
+		dst.Count++
+		state.Points[to] = dst
+		return nil
+	case to == 0:
+		state.Off[mover.Idx()]++
+		return nil
+	case to == -1:
+		state.Bar[mover.Idx()]++
+		return nil
+	default:
+		return errors.New("destination point is out of range")
+	}
+}
+
 func (s *Service) ExportState(path string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()

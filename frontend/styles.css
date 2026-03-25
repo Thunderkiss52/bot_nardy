@@ -153,6 +153,11 @@ button.alt {
   background: var(--accent-2);
 }
 
+button.active {
+  box-shadow: inset 0 0 0 2px rgba(255, 243, 223, 0.72);
+  filter: brightness(1.08);
+}
+
 .row {
   display: flex;
   gap: 8px;
@@ -255,6 +260,21 @@ button.alt {
   color: var(--ink);
 }
 
+.trainingRow {
+  margin-top: 8px;
+}
+
+.trainingStatus {
+  margin-top: 8px;
+  min-height: 22px;
+  border: 1px dashed #b48b62;
+  border-radius: 8px;
+  padding: 7px 8px;
+  background: #fbf3e5;
+  color: #4f351d;
+  font-size: 13px;
+}
+
 .selectedPath {
   margin-top: 9px;
   min-height: 24px;
@@ -321,10 +341,10 @@ button.alt {
 
 .boardStage {
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) 196px;
+  gap: 10px;
   align-items: start;
-  padding: 12px;
+  padding: 10px;
   border-radius: 24px;
   background:
     radial-gradient(circle at 18% 50%, rgba(128, 14, 14, 0.28), transparent 18%),
@@ -333,17 +353,57 @@ button.alt {
   box-shadow: inset 0 0 0 2px rgba(255, 232, 198, 0.08), 0 12px 24px rgba(40, 10, 8, 0.22);
 }
 
+.sideActions {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.sideActions button {
+  width: 100%;
+}
+
+.sideDiceDock {
+  justify-content: stretch;
+}
+
+.sideDiceDock .boardDiceTray {
+  position: static;
+  width: 100%;
+  justify-content: center;
+}
+
+.sideDiceManual {
+  display: grid;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.sideDiceManual .diceManual {
+  min-width: 0;
+}
+
+.sideDiceManual .alt,
+.sideDiceManual button {
+  width: 100%;
+}
+
+.sideTrainingStatus {
+  margin-top: 0;
+}
+
 .diceDockWrap {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: 100%;
+  width: 100%;
 }
 
 .boardDiceTray {
   position: sticky;
-  top: 18px;
-  padding: 12px 10px;
+  top: 14px;
+  padding: 10px 8px;
   border-radius: 24px;
   background:
     radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.08), transparent 24%),
@@ -353,7 +413,7 @@ button.alt {
 
 .boardManualRow {
   justify-content: flex-start;
-  padding: 8px 12px;
+  padding: 7px 10px;
   border-radius: 12px;
   background: #f7ecd9;
   border: 1px solid #b58b62;
@@ -378,9 +438,9 @@ button.alt {
 
 .nardyBoard {
   position: relative;
-  border-radius: 18px;
-  border: 14px solid #d7b277;
-  padding: 14px;
+  border-radius: 16px;
+  border: 11px solid #d7b277;
+  padding: 11px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(0, 0, 0, 0.05) 100%),
     repeating-linear-gradient(
@@ -393,8 +453,8 @@ button.alt {
       #6f4a27 36px
     );
   display: grid;
-  grid-template-columns: repeat(6, minmax(28px, 1fr)) 56px repeat(6, minmax(28px, 1fr));
-  grid-template-rows: 280px 280px;
+  grid-template-columns: repeat(6, minmax(24px, 1fr)) 48px repeat(6, minmax(24px, 1fr));
+  grid-template-rows: 248px 248px;
   gap: 0;
   box-shadow:
     inset 0 0 0 3px rgba(255, 239, 208, 0.4),
@@ -406,7 +466,7 @@ button.alt {
 .nardyBoard::before {
   content: "";
   position: absolute;
-  inset: 14px;
+  inset: 11px;
   border-radius: 10px;
   pointer-events: none;
   background:
@@ -502,7 +562,7 @@ button.alt {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: min(38px, calc(100% - 6px));
+  width: min(34px, calc(100% - 4px));
   height: calc(100% - 12px);
 }
 
@@ -518,8 +578,8 @@ button.alt {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: min(34px, calc(100% - 4px));
-  height: min(34px, calc(100% - 4px));
+  width: min(30px, calc(100% - 3px));
+  height: min(30px, calc(100% - 3px));
   border-radius: 50%;
   border: 1px solid rgba(0, 0, 0, 0.35);
   box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.24), inset 0 -2px 2px rgba(0, 0, 0, 0.33), 0 2px 3px rgba(29, 17, 8, 0.3);
@@ -631,7 +691,7 @@ button.alt {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 36px;
+  width: 32px;
   height: calc(50% - 26px);
 }
 
@@ -683,7 +743,49 @@ button.alt {
   overflow: auto;
 }
 
-@media (max-width: 1500px) {
+
+@media (max-width: 1360px) {
+  .boardStage {
+    grid-template-columns: minmax(0, 1fr) 176px;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .sideActions {
+    gap: 5px;
+  }
+
+  .sideActions button {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .nardyBoard {
+    border-width: 9px;
+    padding: 9px;
+    grid-template-columns: repeat(6, minmax(22px, 1fr)) 42px repeat(6, minmax(22px, 1fr));
+    grid-template-rows: 220px 220px;
+  }
+
+  .nardyBoard::before {
+    inset: 9px;
+  }
+
+  .checkerStack {
+    width: min(30px, calc(100% - 3px));
+  }
+
+  .checker {
+    width: min(27px, calc(100% - 3px));
+    height: min(27px, calc(100% - 3px));
+  }
+
+  .barColumn .barStack {
+    width: 28px;
+  }
+}
+
+@media (max-width: 1180px) {
   .layout {
     grid-template-columns: 1fr;
   }
@@ -696,8 +798,15 @@ button.alt {
     grid-template-columns: 1fr;
   }
 
-  .diceDockWrap {
-    order: 2;
+  .sideActions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .sideActions .sideDiceDock,
+  .sideActions .sideDiceManual,
+  .sideActions .sideTrainingStatus {
+    grid-column: 1 / -1;
   }
 
   .boardDiceTray {
@@ -709,6 +818,7 @@ button.alt {
   .hero {
     flex-direction: column;
   }
+
 
   .setupGrid {
     grid-template-columns: repeat(2, minmax(120px, 1fr));

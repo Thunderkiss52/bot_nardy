@@ -35,15 +35,6 @@
           <select id="lineIndex"></select>
         </label>
       </div>
-      <div class="row">
-        <button id="startBtn" data-i18n="buttons.newGame">Новая партия</button>
-        <button id="swapSideBtn" class="alt" data-i18n="buttons.swapSide">Сменить сторону</button>
-        <button id="legalBtn" class="alt" data-i18n="buttons.showLegal">Показать легальные</button>
-        <button id="clearSelectionBtn" class="alt" data-i18n="buttons.clearSelection">Сброс выбора</button>
-        <button id="applyBtn" data-i18n="buttons.apply">Применить ход</button>
-        <button id="undoBtn" class="alt" data-i18n="buttons.undo">Отменить</button>
-        <button id="exportBtn" class="alt" data-i18n="buttons.export">Экспорт</button>
-      </div>
       <div id="turnGuide" class="turnGuide">1) Новая партия 2) Клик по костям на доске 3) Клик по фишке и точке назначения.</div>
       <div id="selectedPath" class="selectedPath">Выбор хода: пока пусто.</div>
       <div id="status" class="status"></div>
@@ -99,28 +90,41 @@
         <h2 data-i18n="sections.board">Доска</h2>
         <p class="hint" data-i18n="hint.click">Для хода: кликни по костям на доске, затем кликай по подсвеченным фишкам и целям.</p>
         <div class="boardTopBar">
-          <div class="diceManualRow boardManualRow">
-            <label class="diceManual">
-              <span data-i18n="labels.diceInput">Кубики / 4:2</span>
-              <input type="text" id="diceInput" placeholder="4:2" inputmode="numeric" />
-            </label>
-            <button id="syncDiceBtn" class="alt" data-i18n="buttons.syncDice">Бросить эти кости</button>
-          </div>
           <div class="boardStats">
             <div id="barInfo" class="statBadge">Бар: Б 0 | Ч 0</div>
             <div id="offInfo" class="statBadge">Вынос: Б 0 | Ч 0</div>
           </div>
         </div>
         <div class="boardStage">
-          <div class="diceDockWrap">
-            <div id="diceTray" class="diceTray boardDiceTray" aria-label="Dice tray">
-              <button id="dieBtn1" class="dieFace" type="button"></button>
-              <button id="dieBtn2" class="dieFace" type="button"></button>
-              <button id="dieBtn3" class="dieFace extra" type="button"></button>
-              <button id="dieBtn4" class="dieFace extra" type="button"></button>
-            </div>
-          </div>
           <div id="board" class="nardyBoard"></div>
+          <aside class="sideActions">
+            <div class="diceDockWrap sideDiceDock">
+              <div id="diceTray" class="diceTray boardDiceTray" aria-label="Dice tray">
+                <button id="dieBtn1" class="dieFace" type="button"></button>
+                <button id="dieBtn2" class="dieFace" type="button"></button>
+                <button id="dieBtn3" class="dieFace extra" type="button"></button>
+                <button id="dieBtn4" class="dieFace extra" type="button"></button>
+              </div>
+            </div>
+            <div class="diceManualRow boardManualRow sideDiceManual">
+              <label class="diceManual">
+                <span data-i18n="labels.diceInput">Кубики / 4:2</span>
+                <input type="text" id="diceInput" placeholder="4:2" inputmode="numeric" />
+              </label>
+              <button id="syncDiceBtn" class="alt" data-i18n="buttons.syncDice">Бросить эти кости</button>
+            </div>
+            <button id="startBtn" data-i18n="buttons.newGame">Новая партия</button>
+            <button id="swapSideBtn" class="alt" data-i18n="buttons.swapSide">Сменить сторону</button>
+            <button id="legalBtn" class="alt" data-i18n="buttons.showLegal">Показать легальные</button>
+            <button id="clearSelectionBtn" class="alt" data-i18n="buttons.clearSelection">Сброс выбора</button>
+            <button id="editBtn" class="alt" data-i18n="buttons.editCheckers">Изменить шашки</button>
+            <button id="applyBtn" data-i18n="buttons.apply">Применить ход</button>
+            <button id="undoBtn" class="alt" data-i18n="buttons.undo">Отменить</button>
+            <button id="exportBtn" class="alt" data-i18n="buttons.export">Экспорт</button>
+            <button id="selfLearnBtn" class="alt" data-i18n="buttons.selfLearn">Самообучение</button>
+            <button id="bgTrainingBtn" class="alt" data-i18n="buttons.bgTrainingStart">Фоновый self-play</button>
+            <div id="trainingStatus" class="trainingStatus sideTrainingStatus">Фоновое обучение выключено.</div>
+          </aside>
         </div>
       </article>
 

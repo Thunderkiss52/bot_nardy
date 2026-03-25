@@ -12,6 +12,8 @@ export function BackgroundTrainingStatus():Promise<desktop.BackgroundTrainingRes
 
 export function Close():Promise<void>;
 
+export function EditChecker(arg1:desktop.EditCheckerRequest):Promise<desktop.TurnResponse>;
+
 export function Export(arg1:string):Promise<void>;
 
 export function ImportMoveLog(arg1:string):Promise<desktop.ImportLogResponse>;

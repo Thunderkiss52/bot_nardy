@@ -33,6 +33,12 @@ type TurnResponse struct {
 	Applied   *engine.TurnLine    `json:"applied,omitempty"`
 }
 
+type EditCheckerRequest struct {
+	From  int    `json:"from"`
+	To    int    `json:"to"`
+	Color string `json:"color,omitempty"`
+}
+
 type SelfLearnResponse struct {
 	Result training.TrainSummary `json:"result"`
 }
@@ -177,6 +183,14 @@ func (a *API) ApplyBestMove(d1, d2 int) (TurnResponse, error) {
 
 func (a *API) Undo() (TurnResponse, error) {
 	state, err := a.svc.Undo()
+	if err != nil {
+		return TurnResponse{}, err
+	}
+	return TurnResponse{State: state, IsBotTurn: a.svc.IsBotTurn()}, nil
+}
+
+func (a *API) EditChecker(req EditCheckerRequest) (TurnResponse, error) {
+	state, err := a.svc.EditChecker(req.From, req.To, parseColor(req.Color))
 	if err != nil {
 		return TurnResponse{}, err
 	}

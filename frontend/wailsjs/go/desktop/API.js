@@ -18,6 +18,10 @@ export function Close() {
   return window['go']['desktop']['API']['Close']();
 }
 
+export function EditChecker(arg1) {
+  return window['go']['desktop']['API']['EditChecker'](arg1);
+}
+
 export function Export(arg1) {
   return window['go']['desktop']['API']['Export'](arg1);
 }

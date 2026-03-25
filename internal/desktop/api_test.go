@@ -127,3 +127,30 @@ func TestSwapBotSideUpdatesBotTurn(t *testing.T) {
 		t.Fatalf("expected bot turn after swapping bot to white")
 	}
 }
+
+func TestEditCheckerUpdatesState(t *testing.T) {
+	api, err := NewAPI("")
+	if err != nil {
+		t.Fatalf("new api: %v", err)
+	}
+	defer api.Close()
+
+	_, err = api.StartGame(StartRequest{
+		GameType:  "short",
+		BotSide:   "black",
+		Opponent:  "human",
+		ThinkTime: 1,
+		Seed:      5,
+	})
+	if err != nil {
+		t.Fatalf("start game: %v", err)
+	}
+
+	resp, err := api.EditChecker(EditCheckerRequest{From: 24, To: 23})
+	if err != nil {
+		t.Fatalf("edit checker: %v", err)
+	}
+	if resp.State.Points[24].Count != 1 || resp.State.Points[23].Count != 1 {
+		t.Fatalf("unexpected edited state: p24=%+v p23=%+v", resp.State.Points[24], resp.State.Points[23])
+	}
+}
